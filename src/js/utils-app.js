@@ -17,6 +17,8 @@ Tabulator.prototype.extendModule("format", "formatters", {
 
 // options for table
 function tableOptions(data, columns) {
+    var footerContent = '<span class="footerInfo">nombre de lignes: <span id="rowsCount" style="font-weight: 900"></span> (filtrées)';
+        footerContent += '<span style="margin-left: 2em">absences: </span><span id="absences" style="font-weight: 900; color:red"></span> (au total)</span>';
     return {
         selectable:true,
         height: 800,
@@ -28,6 +30,7 @@ function tableOptions(data, columns) {
         paginationSize: 50,
         movableColumns: true,
         headerFilterPlaceholder: "filtre par mot-clé...",
+        footerElement: footerContent,
         history: true,
         tooltips: true,
         initialSort: [
@@ -39,29 +42,32 @@ function tableOptions(data, columns) {
         rowSelectionChanged: function(data, rows) {
             $("#select-stats span").text(data.length);
         },
+        dataFiltered:function(filters, rows){
+            document.getElementById('rowsCount').innerHTML = rows.length;
+        },
     }
 }
 
-//
 function setDataColumns(headersColumns) {
-    var columns = [];
+    var columns = [], name;
     headersColumns.forEach((column, i) => {
+        name = columnName(column);
         if (column == headersColumns[0]) {
-            columns.push({ title: column, field: column, frozen: true , headerFilter:"input"});
+            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" });
         } else if (column == headersColumns[1]) {
-            columns.push({ title: column, field: column, frozen: true , headerFilter:"input"}); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
+            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (column == headersColumns[2]) {
-            columns.push({ title: column, field: column, visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
         } else if (i > 12 && i < 18) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", visible: false, headerFilter:"input"});
-        } else if (i == 9 ||i == 18) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", headerFilter:"input"});
+            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+        } else if (i == 9 || i == 18) {
+            columns.push({ title: name, field: column, formatter: "numberfmt", headerFilter: "input" });
         } else if (i > 18 && i < 39) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
         } else if (i > 39 && i < 44) {
-            columns.push({ title: column, field: column, visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
         } else {
-            columns.push({ title: column, field: column , headerFilter:"input"});
+            columns.push({ title: name, field: column, headerFilter: "input" });
         }
     })
     return columns;
@@ -89,11 +95,21 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
 }
 
 /* HELPERS */
+function columnName(name) { regexEvalHebdo
+    if (regexHeadersSPE.test(name)) {
+        return name.match(regexHeadersSPE)[0].replace(/\s\-/, "");
+    } else if (regexEvalHebdo.test(name)) {
+        return name.match(regexEvalHebdo)[0].replace(/\:/, "");
+    } else if (regexLivrable.test(name)) {
+        return name.match(regexLivrable)[0].replace(/\:/, "");
+    } else {
+        return name;
+    }
+}
 
 function fillOptionsSelect(columns) {
-    // pour select fields
     columns.forEach(option => {
-        $('#filter-field').append('<option value="' + option + '" style="max-width:100px;">' + option + '</option>');
+        $('#filter-field').append('<option value="' + option + '" style="max-width:100px;">' + columnName(option) + '</option>');
     });
 
     ["like", "=", "<", "<=", ">", ">=", "!="].forEach(option => {

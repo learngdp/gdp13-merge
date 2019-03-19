@@ -625,7 +625,11 @@ const regexSPE = /_SPE-\w{2,4}_/;
 
 const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
 
+// pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
+const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
+const regexLivrable = /^Livrables [1|2|3]\:/;
+
 
 const format2dec = d3.format(".2f");
 const formatPercent = d3.format(".0%");
@@ -646,6 +650,8 @@ Tabulator.prototype.extendModule("format", "formatters", {
 
 // options for table
 function tableOptions(data, columns) {
+    var footerContent = '<span class="footerInfo">nombre de lignes: <span id="rowsCount" style="font-weight: 900"></span> (filtrées)';
+        footerContent += '<span style="margin-left: 2em">absences: </span><span id="absences" style="font-weight: 900; color:red"></span> (au total)</span>';
     return {
         selectable:true,
         height: 800,
@@ -657,6 +663,7 @@ function tableOptions(data, columns) {
         paginationSize: 50,
         movableColumns: true,
         headerFilterPlaceholder: "filtre par mot-clé...",
+        footerElement: footerContent,
         history: true,
         tooltips: true,
         initialSort: [
@@ -668,29 +675,32 @@ function tableOptions(data, columns) {
         rowSelectionChanged: function(data, rows) {
             $("#select-stats span").text(data.length);
         },
+        dataFiltered:function(filters, rows){
+            document.getElementById('rowsCount').innerHTML = rows.length;
+        },
     }
 }
 
-//
 function setDataColumns(headersColumns) {
-    var columns = [];
+    var columns = [], name;
     headersColumns.forEach((column, i) => {
+        name = columnName(column);
         if (column == headersColumns[0]) {
-            columns.push({ title: column, field: column, frozen: true , headerFilter:"input"});
+            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" });
         } else if (column == headersColumns[1]) {
-            columns.push({ title: column, field: column, frozen: true , headerFilter:"input"}); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
+            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (column == headersColumns[2]) {
-            columns.push({ title: column, field: column, visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
         } else if (i > 12 && i < 18) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", visible: false, headerFilter:"input"});
-        } else if (i == 9 ||i == 18) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", headerFilter:"input"});
+            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+        } else if (i == 9 || i == 18) {
+            columns.push({ title: name, field: column, formatter: "numberfmt", headerFilter: "input" });
         } else if (i > 18 && i < 39) {
-            columns.push({ title: column, field: column, formatter: "numberfmt", visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
         } else if (i > 39 && i < 44) {
-            columns.push({ title: column, field: column, visible: false, headerFilter:"input"});
+            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
         } else {
-            columns.push({ title: column, field: column , headerFilter:"input"});
+            columns.push({ title: name, field: column, headerFilter: "input" });
         }
     })
     return columns;
@@ -718,11 +728,21 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
 }
 
 /* HELPERS */
+function columnName(name) { regexEvalHebdo
+    if (regexHeadersSPE.test(name)) {
+        return name.match(regexHeadersSPE)[0].replace(/\s\-/, "");
+    } else if (regexEvalHebdo.test(name)) {
+        return name.match(regexEvalHebdo)[0].replace(/\:/, "");
+    } else if (regexLivrable.test(name)) {
+        return name.match(regexLivrable)[0].replace(/\:/, "");
+    } else {
+        return name;
+    }
+}
 
 function fillOptionsSelect(columns) {
-    // pour select fields
     columns.forEach(option => {
-        $('#filter-field').append('<option value="' + option + '" style="max-width:100px;">' + option + '</option>');
+        $('#filter-field').append('<option value="' + option + '" style="max-width:100px;">' + columnName(option) + '</option>');
     });
 
     ["like", "=", "<", "<=", ">", ">=", "!="].forEach(option => {
@@ -850,13 +870,20 @@ function globalReport(jsonData) {
     data[0].splice(11, 0, '2ème SPE');
     data[0].splice(12, 0, 'SPE validées'); // pour ajouter la colonne avant de pousser le nombre de spé validées
 
-    var pass70 = 0.695, row, countSpe;
+    var pass70 = 0.695,
+        row, countSpe;
+
+    var pass70 = 0.695,
+        absences = 0,
+        row, countSpe;
 
     for (var i = 0, lgi = data.slice(1, data.length).length; i < lgi; i++) {
         row = data.slice(1, data.length)[i];
 
+        if (row[3] === "Absent sur profile_info")
+            absences++;
+
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
-        // console.log(rangeSpe[i].filter(el => el > pass70), countSpe, pass70);
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
@@ -876,15 +903,13 @@ function globalReport(jsonData) {
         row.splice(7, 0, "");
         row.splice(8, 0, "");
 
-        // row[9] = row[9].split(",").map(grade => isNaN(parseFloat(grade)) ? "" : formatPercent(parseFloat(grade))).join(", ");
-
         row.splice(10, 0, regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1);
         row.splice(11, 0, regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2);
         row.splice(12, 0, countSpe);
     }
 
     setTimeout(() => {
-        launchTab(d3.csvParse(Papa.unparse(data))); // dataToTable(data, cohortes, cohortTitle);
+        launchTab(d3.csvParse(Papa.unparse(data)), absences); // dataToTable(data, cohortes, cohortTitle);
     }, 100);
 
     console.log("globalReport end " + (new Date() - timeProcess) + "ms");
@@ -892,7 +917,7 @@ function globalReport(jsonData) {
 }
 
 
-function launchTab(jsonFromCSV) {
+function launchTab(jsonFromCSV, absences) {
     console.log("start " + (new Date() - timeProcess) + "ms");
     // console.log(jsonFromCSV);
 
@@ -909,8 +934,8 @@ function launchTab(jsonFromCSV) {
     // set columns with formatters and others options
     var columns = setDataColumns(headers);
 
-    //create Tabulator on DOM element with id "example-table"
-    var table = new Tabulator("#example-table", tableOptions(data, columns));
+    //create Tabulator on DOM element with id "table-app"
+    var table = new Tabulator("#table-app", tableOptions(data, columns));
     // table.setLocale("fr"); // *** à revoir ***
 
     // just for dev
@@ -938,14 +963,14 @@ function launchTab(jsonFromCSV) {
     $("#filter-value").keyup(updateFilter);
     //Clear filters on "Clear Filters" button click
     $("#filter-clear").click(function() {
-        $("#filter-field").val("");
-        $("#filter-type").val("=");
+        $("#filter-field").val("Student ID");
+        $("#filter-type").val("like");
         $("#filter-value").val("");
 
         table.clearFilter();
     });
 
-    document.getElementById('groupBy-btn').onclick = function(e) {
+    document.getElementById('groupBy-btn').onclick = function (e) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [];
         if (groupValues) {
@@ -959,23 +984,23 @@ function launchTab(jsonFromCSV) {
         }
     }
 
-    document.getElementById('degroupBy-btn').onclick = function(e) {
+    document.getElementById('degroupBy-btn').onclick = function (e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
         document.getElementById('groupBy-btn').innerHTML = '<i class="fas fa-lock-open"></i>'
     }
 
-    document.getElementById('hide-col').onclick = function() {
+    document.getElementById('hide-col').onclick = function () {
         let columnName = document.getElementById('filter-field').value;
         table.hideColumn(columnName);
     }
 
-    document.getElementById('show-col').onclick = function() {
+    document.getElementById('show-col').onclick = function () {
         let columnName = document.getElementById('filter-field').value;
         table.showColumn(columnName);
     }
 
-    document.getElementById('showAll-coll').onclick = function() {
+    document.getElementById('showAll-coll').onclick = function () {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         setTimeout(() => {
             headers.forEach(header => {
@@ -985,11 +1010,11 @@ function launchTab(jsonFromCSV) {
         }, 10)
     }
 
-    $("#deselectAll-rows").click(function(){
+    $("#deselectAll-rows").click(function () {
         table.deselectRow();
     });
 
-    document.getElementById('exportCSV-btn').onclick = function(e) {
+    document.getElementById('exportCSV-btn').onclick = function (e) {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         console.time("export");
         setTimeout(() => {
@@ -1000,7 +1025,7 @@ function launchTab(jsonFromCSV) {
         }, 100);
     }
 
-    var dataFiltered = function() {
+    var dataFiltered = function () {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
         var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value))
@@ -1021,5 +1046,10 @@ function launchTab(jsonFromCSV) {
         // dataExport = dataExport.map(el => el.slice(0, el.length-1)); // initialement pour enliver l'id par row
         return dataExport;
     };
+    
+    setTimeout(() => {
+        if (absences > 0)
+            document.getElementById('absences').innerHTML = absences;
+    }, 10);
     return true;
 } // FIN DE LAUNCHtAB

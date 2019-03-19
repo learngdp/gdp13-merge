@@ -2,8 +2,9 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
     <title>GdP13 merge</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         const lang = navigator.language;
         const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
@@ -30,7 +31,7 @@
                 <button id="showAll-coll" title="afficher toutes les colonnes" style="margin-right:0.5em"><i class="fa fa-eye"></i></button>
                 <button id="hide-col" title="masquer la colonne"><i class="fa fa-eye-slash"></i></button>
                 <button id="show-col" title="afficher la colonne"><i class="fa fa-eye"></i></button>
-                <select name="filter-field" id="filter-field" style="width: 200px" title="entêtes des colonnes"></select>
+                <select name="filter-field" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
                 <select name="filter-type" id="filter-type" style="width: 50px" title="type d'opérateurs pour filtre"></select>
                 <input name="filter-value" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
                 <button id="filter-clear" title="effacer"><i class="fa fa-eraser"></i></button>
@@ -47,7 +48,7 @@
                         <input id="fileInput" type="file" accept=".csv" multiple />
                     </div>
                     <div id="profil_info-div" class="hidden">
-                        <label for="fileInputMappage" class="labelProfile">Profile info 
+                        <label for="fileInputMappage" class="labelProfile">Profile info
                             <i class="fa fa-arrow-alt-circle-right blink"></i>
                         </label>
                         <input id="fileInputMappage" type="file" accept=".csv" />
@@ -57,7 +58,7 @@
         </div>
         <div style="height: 1em"></div>
         <div>
-            <div id="example-table"></div>
+            <div id="table-app"></div>
         </div>
     </div>
     <pre id="output_pre" style="display:none"></pre>

@@ -163,4 +163,8 @@ const regexSPE = /_SPE-\w{2,4}_/;
 
 const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
 
+// pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
+const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
+const regexLivrable = /^Livrables [1|2|3]\:/;
+

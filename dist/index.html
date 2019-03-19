@@ -2,8 +2,9 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
     <title>GdP13 merge</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         const lang = navigator.language;
         const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
@@ -30,7 +31,7 @@
                 <button id="showAll-coll" title="afficher toutes les colonnes" style="margin-right:0.5em"><i class="fa fa-eye"></i></button>
                 <button id="hide-col" title="masquer la colonne"><i class="fa fa-eye-slash"></i></button>
                 <button id="show-col" title="afficher la colonne"><i class="fa fa-eye"></i></button>
-                <select name="filter-field" id="filter-field" style="width: 200px" title="entêtes des colonnes"></select>
+                <select name="filter-field" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
                 <select name="filter-type" id="filter-type" style="width: 50px" title="type d'opérateurs pour filtre"></select>
                 <input name="filter-value" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
                 <button id="filter-clear" title="effacer"><i class="fa fa-eraser"></i></button>
@@ -47,7 +48,7 @@
                         <input id="fileInput" type="file" accept=".csv" multiple />
                     </div>
                     <div id="profil_info-div" class="hidden">
-                        <label for="fileInputMappage" class="labelProfile">Profile info 
+                        <label for="fileInputMappage" class="labelProfile">Profile info
                             <i class="fa fa-arrow-alt-circle-right blink"></i>
                         </label>
                         <input id="fileInputMappage" type="file" accept=".csv" />
@@ -57,10 +58,10 @@
         </div>
         <div style="height: 1em"></div>
         <div>
-            <div id="example-table"></div>
+            <div id="table-app"></div>
         </div>
     </div>
     <pre id="output_pre" style="display:none"></pre>
-<script type="text/javascript" src="runtime.bundle.js"></script><script type="text/javascript" src="chunks/npm.lodash-fd80ae810f6755ae0a85.js"></script><script type="text/javascript" src="chunks/npm.d3-selection-f3bf62dd7858b54b1d5e.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-chromatic-687468e577a34c4e9675.js"></script><script type="text/javascript" src="chunks/npm.d3-array-9578ee0083c2d15336af.js"></script><script type="text/javascript" src="chunks/npm.d3-transition-9dc44e9cd9daba029056.js"></script><script type="text/javascript" src="chunks/npm.d3-interpolate-a2b027dc35507200ce48.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-e3657b82982f2ff0c627.js"></script><script type="text/javascript" src="chunks/npm.d3-time-85d1a5b272d689c8311b.js"></script><script type="text/javascript" src="chunks/npm.d3-format-30f545be22e288a5eb98.js"></script><script type="text/javascript" src="chunks/npm.fortawesome-7b88f0cdf218a822378f.js"></script><script type="text/javascript" src="chunks/npm.d3-ease-03b80e0793be7bc667f5.js"></script><script type="text/javascript" src="chunks/npm.jquery-ui-bec925c0404a40ed74a1.js"></script><script type="text/javascript" src="chunks/npm.d3-collection-2cfa1b452502c728ef77.js"></script><script type="text/javascript" src="chunks/npm.d3-color-a3634903d73ce0633a1b.js"></script><script type="text/javascript" src="chunks/npm.d3-dsv-73f8194b73c068eed9c9.js"></script><script type="text/javascript" src="chunks/npm.d3-time-format-61da32a191b4403b19f6.js"></script><script type="text/javascript" src="chunks/npm.d3-timer-30f9849e0d09c07241cf.js"></script><script type="text/javascript" src="chunks/npm.tabulator-tables-9fa2e8d0e7790a645cf6.js"></script><script type="text/javascript" src="chunks/npm.css-loader-d061db1da0a64b107b3b.js"></script><script type="text/javascript" src="chunks/npm.d3-dispatch-2c5081a53e3de980eb1b.js"></script><script type="text/javascript" src="chunks/npm.style-loader-116c249e903b4734cca5.js"></script><script type="text/javascript" src="chunks/npm.webpack-7da86474d020b57da8f2.js"></script><script type="text/javascript" src="chunks/npm.file-saver-6a5d6923c78711e91f86.js"></script><script type="text/javascript" src="chunks/npm.jquery-b0999bd844c578b4c96b.js"></script><script type="text/javascript" src="chunks/npm.papaparse-edae25665fa052be5dc9.js"></script><script type="text/javascript" src="chunks/npm.process-4ebe4af9440b6a3c31d7.js"></script><script type="text/javascript" src="chunks/npm.setimmediate-c7885fffc0327dd71e5a.js"></script><script type="text/javascript" src="chunks/npm.sweetalert-85b4ee5af61cb87d82f9.js"></script><script type="text/javascript" src="chunks/npm.timers-browserify-c24c16f58fc961200453.js"></script><script type="text/javascript" src="chunks/npm.webpack-jquery-ui-74fccffaca1a0df12d14.js"></script><script type="text/javascript" src="chunks/app-c03d31dcd0536d0f726e.js"></script></body>
+<script type="text/javascript" src="runtime.bundle.js"></script><script type="text/javascript" src="chunks/npm.lodash-fd80ae810f6755ae0a85.js"></script><script type="text/javascript" src="chunks/npm.d3-selection-f3bf62dd7858b54b1d5e.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-chromatic-687468e577a34c4e9675.js"></script><script type="text/javascript" src="chunks/npm.d3-array-9578ee0083c2d15336af.js"></script><script type="text/javascript" src="chunks/npm.d3-transition-9dc44e9cd9daba029056.js"></script><script type="text/javascript" src="chunks/npm.d3-interpolate-a2b027dc35507200ce48.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-e3657b82982f2ff0c627.js"></script><script type="text/javascript" src="chunks/npm.d3-time-85d1a5b272d689c8311b.js"></script><script type="text/javascript" src="chunks/npm.d3-format-30f545be22e288a5eb98.js"></script><script type="text/javascript" src="chunks/npm.fortawesome-7b88f0cdf218a822378f.js"></script><script type="text/javascript" src="chunks/npm.d3-ease-03b80e0793be7bc667f5.js"></script><script type="text/javascript" src="chunks/npm.jquery-ui-bec925c0404a40ed74a1.js"></script><script type="text/javascript" src="chunks/npm.d3-collection-2cfa1b452502c728ef77.js"></script><script type="text/javascript" src="chunks/npm.d3-color-a3634903d73ce0633a1b.js"></script><script type="text/javascript" src="chunks/npm.d3-dsv-73f8194b73c068eed9c9.js"></script><script type="text/javascript" src="chunks/npm.d3-time-format-61da32a191b4403b19f6.js"></script><script type="text/javascript" src="chunks/npm.d3-timer-30f9849e0d09c07241cf.js"></script><script type="text/javascript" src="chunks/npm.tabulator-tables-9fa2e8d0e7790a645cf6.js"></script><script type="text/javascript" src="chunks/npm.css-loader-d061db1da0a64b107b3b.js"></script><script type="text/javascript" src="chunks/npm.d3-dispatch-2c5081a53e3de980eb1b.js"></script><script type="text/javascript" src="chunks/npm.style-loader-116c249e903b4734cca5.js"></script><script type="text/javascript" src="chunks/npm.webpack-7da86474d020b57da8f2.js"></script><script type="text/javascript" src="chunks/npm.file-saver-6a5d6923c78711e91f86.js"></script><script type="text/javascript" src="chunks/npm.jquery-b0999bd844c578b4c96b.js"></script><script type="text/javascript" src="chunks/npm.papaparse-edae25665fa052be5dc9.js"></script><script type="text/javascript" src="chunks/npm.process-4ebe4af9440b6a3c31d7.js"></script><script type="text/javascript" src="chunks/npm.setimmediate-c7885fffc0327dd71e5a.js"></script><script type="text/javascript" src="chunks/npm.sweetalert-85b4ee5af61cb87d82f9.js"></script><script type="text/javascript" src="chunks/npm.timers-browserify-c24c16f58fc961200453.js"></script><script type="text/javascript" src="chunks/npm.webpack-jquery-ui-74fccffaca1a0df12d14.js"></script><script type="text/javascript" src="chunks/app-6a972c9dca6365ad60c9.js"></script></body>
 
 </html>
