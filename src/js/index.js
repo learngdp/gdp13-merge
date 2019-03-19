@@ -12,7 +12,7 @@ fileInput.onchange = function(e) {
 
     var files = [...fileInput.files];
     // console.log(files);
-    files = files.sort((a, b) => a.size - b.size);
+    files = files.sort((a, b) => b.size - a.size);
     // var filesNames = files.map(file => file.name);
     // var testFiles = findFilesDuplicates(fileNames);
     // console.log(testFiles);
