@@ -1,0 +1,48 @@
+body {
+  padding: 2px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.hidden {
+  display: none;
+}
+
+.labelProfile {
+  color: red;
+  font-weight: 900;
+}
+
+.normal {
+  color: #222;
+  font-weight: normal;
+}
+
+.blink {
+  animation-duration: 1s;
+  animation-name: blinker;
+  animation-direction: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

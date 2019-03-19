@@ -1,0 +1,48 @@
+{
+  "name": "gdp13-merge",
+  "version": "1.0.0",
+  "description": "Outil reporting",
+  "keywords": [
+    "Tabulator"
+  ],
+  "author": "J. Gorène",
+  "license": "ISC",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dashboard -- webpack-dev-server --open --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
+    "deploy": "git subtree push --prefix dist origin gh-pages"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.15",
+    "@fortawesome/free-regular-svg-icons": "^5.7.2",
+    "@fortawesome/free-solid-svg-icons": "^5.7.2",
+    "cookieconsent": "^3.1.0",
+    "d3": "^5.9.2",
+    "file-saver": "^2.0.1",
+    "lodash": "^4.17.11",
+    "papaparse": "^4.6.3",
+    "sweetalert": "^2.1.2",
+    "tabulator-tables": "^4.2.3",
+    "webpack-jquery-ui": "^2.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-loader": "^8.0.5",
+    "clean-webpack-plugin": "^2.0.1",
+    "concat": "^1.0.3",
+    "css-loader": "^2.1.1",
+    "csv-loader": "^3.0.2",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "style-loader": "^0.23.1",
+    "terser-webpack-plugin": "^1.2.3",
+    "webpack": "^4.29.6",
+    "webpack-bundle-analyzer": "^3.1.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dashboard": "^3.0.0",
+    "webpack-dev-server": "^3.2.1",
+    "webpack-merge": "^4.2.1"
+  }
+}

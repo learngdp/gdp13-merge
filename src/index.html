@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GdP13 merge</title>
+    <script>
+        const lang = navigator.language;
+        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
+        function iOSversion() {
+          if (/iP(hone|od|ad)/.test(navigator.platform)) {
+            var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+            return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+          }
+        }
+        var ver = iOSversion();
+        if (ver !== undefined && ver[0] <= 10) {
+            var message = (locale === 'fr') ? '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver + '</b></p>':
+            '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
+            document.write(message);
+        }
+    </script>
+</head>
+
+<body>
+    <div id="main_div" style="display:none">
+        <div>
+            <div>
+                <button id="showAll-coll" title="afficher toutes les colonnes" style="margin-right:0.5em"><i class="fa fa-eye"></i></button>
+                <button id="hide-col" title="masquer la colonne"><i class="fa fa-eye-slash"></i></button>
+                <button id="show-col" title="afficher la colonne"><i class="fa fa-eye"></i></button>
+                <select name="filter-field" id="filter-field" style="width: 200px" title="entêtes des colonnes"></select>
+                <select name="filter-type" id="filter-type" style="width: 50px" title="type d'opérateurs pour filtre"></select>
+                <input name="filter-value" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
+                <button id="filter-clear" title="effacer"><i class="fa fa-eraser"></i></button>
+                <input id="groupBy-input" type="text" style="width: 150px;margin-left: 2em" placeholder="entête,entête,..." />
+                <button id="groupBy-btn" title="grouper"><i class="fa fa-lock-open"></i></button>
+                <button id="degroupBy-btn" title="dégrouper"><i class="fa fa-undo-alt"></i></button>
+                <button id="exportCSV-btn" title="export csv" style="margin-left: 2em"><i class="fa fa-download"></i>
+                    CSV</button>
+                <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fa fa-cog fa-spin"></i></span>
+
+                <div id="mainMenu-div" class="inline" style="float: right">
+                    <div id="grade_report-div" class="inline">
+                        <label for="fileInput">Grade report </label>
+                        <input id="fileInput" type="file" accept=".csv" multiple />
+                    </div>
+                    <div id="profil_info-div" class="hidden">
+                        <label for="fileInputMappage" class="labelProfile">Profile info 
+                            <i class="fa fa-arrow-alt-circle-right blink"></i>
+                        </label>
+                        <input id="fileInputMappage" type="file" accept=".csv" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="height: 1em"></div>
+        <div>
+            <div id="example-table"></div>
+        </div>
+    </div>
+    <pre id="output_pre" style="display:none"></pre>
+</body>
+
+</html>
