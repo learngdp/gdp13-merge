@@ -18,26 +18,26 @@ Tabulator.prototype.extendModule("format", "formatters", {
 // options for table
 function tableOptions(data, columns) {
     return {
-        // locale: true, // not working
+        selectable:true,
         height: 800,
         data: data,
         reactiveData: true,
-        // layout: "fitColumns", //fit columns to width of table (optional)
         tooltipsHeader: true,
         columns: columns,
         pagination: "local",
         paginationSize: 50,
         movableColumns: true,
-        headerFilterPlaceholder:"filtre par mot-clé...",
-        // responsiveLayout: "hide", //hide columns that dont fit on the table
-        history: true, //allow undo and redo actions on the table
-        tooltips: true, //show tool tips on cells
-        // groupBy: ["Pre MOOC", "Grade"],
-        initialSort: [ //set the initial sort order of the data
+        headerFilterPlaceholder: "filtre par mot-clé...",
+        history: true,
+        tooltips: true,
+        initialSort: [
             { column: "Student ID", dir: "asc" },
         ],
         rowClick: function(e, row) {
-            console.log(e, row);
+            console.log(row);
+        },
+        rowSelectionChanged: function(data, rows) {
+            $("#select-stats span").text(data.length);
         },
     }
 }

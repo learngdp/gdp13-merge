@@ -76,6 +76,9 @@ import {
 import {
     faArrowAltCircleRight
 } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
+import {
+    faTable
+} from '@fortawesome/free-solid-svg-icons/faTable';
 
 library.add(
     faCog,
@@ -88,7 +91,8 @@ library.add(
     faLock,
     faLockOpen,
     faUndoAlt,
-    faArrowAltCircleRight
+    faArrowAltCircleRight,
+    faTable
 );
 
 dom.watch();

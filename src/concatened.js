@@ -76,6 +76,9 @@ import {
 import {
     faArrowAltCircleRight
 } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
+import {
+    faTable
+} from '@fortawesome/free-solid-svg-icons/faTable';
 
 library.add(
     faCog,
@@ -88,7 +91,8 @@ library.add(
     faLock,
     faLockOpen,
     faUndoAlt,
-    faArrowAltCircleRight
+    faArrowAltCircleRight,
+    faTable
 );
 
 dom.watch();
@@ -643,26 +647,26 @@ Tabulator.prototype.extendModule("format", "formatters", {
 // options for table
 function tableOptions(data, columns) {
     return {
-        // locale: true, // not working
+        selectable:true,
         height: 800,
         data: data,
         reactiveData: true,
-        // layout: "fitColumns", //fit columns to width of table (optional)
         tooltipsHeader: true,
         columns: columns,
         pagination: "local",
         paginationSize: 50,
         movableColumns: true,
-        headerFilterPlaceholder:"filtre par mot-clé...",
-        // responsiveLayout: "hide", //hide columns that dont fit on the table
-        history: true, //allow undo and redo actions on the table
-        tooltips: true, //show tool tips on cells
-        // groupBy: ["Pre MOOC", "Grade"],
-        initialSort: [ //set the initial sort order of the data
+        headerFilterPlaceholder: "filtre par mot-clé...",
+        history: true,
+        tooltips: true,
+        initialSort: [
             { column: "Student ID", dir: "asc" },
         ],
         rowClick: function(e, row) {
-            console.log(e, row);
+            console.log(row);
+        },
+        rowSelectionChanged: function(data, rows) {
+            $("#select-stats span").text(data.length);
         },
     }
 }
@@ -834,18 +838,10 @@ function globalReport(jsonData) {
     var dataFromCSV = d3.csvParseRows(Papa.unparse(jsonData));
 
     var data = dataFromCSV.map(row => commaToPoint(row));
-    var pass70 = 0.695;
 
     var headersReportSpe = [data[0].slice(17, 32)];
-    var dataReport = data.slice(1, data.length);
 
-    var rangeSpe = data.map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
-
-    // lignes à décommenter pour calcul du nombre de spé réussies ajouté en fin du global-report
-    var countSpe = data.slice(1, data.length).map((row) => row.slice(17, 32)
-        .map(el => (isNaN(parseFloat(el))) ? 0 : parseFloat(el))
-        .filter(el => el > pass70).length);
-    // console.log(countSpe);
+    var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
 
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
@@ -854,8 +850,13 @@ function globalReport(jsonData) {
     data[0].splice(11, 0, '2ème SPE');
     data[0].splice(12, 0, 'SPE validées'); // pour ajouter la colonne avant de pousser le nombre de spé validées
 
+    var pass70 = 0.695, row, countSpe;
+
     for (var i = 0, lgi = data.slice(1, data.length).length; i < lgi; i++) {
-        var row = data.slice(1, data.length)[i];
+        row = data.slice(1, data.length)[i];
+
+        countSpe = rangeSpe[i].filter(el => el > pass70).length;
+        // console.log(rangeSpe[i].filter(el => el > pass70), countSpe, pass70);
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
@@ -864,7 +865,7 @@ function globalReport(jsonData) {
         ] : "";
         if (rangeSpe[i].length > 1 && rangeSpe[i].indexOf(max1) !== -1) rangeSpe[i].splice(
             rangeSpe[i].indexOf(max1), 1, 0);
-        // dataReport[i].push(cellHeader1); // 17
+
         var max2 = Math.max.apply(null, rangeSpe[i]);
         var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersReportSpe[0][
             rangeSpe[i].indexOf(max2)
@@ -879,35 +880,12 @@ function globalReport(jsonData) {
 
         row.splice(10, 0, regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1);
         row.splice(11, 0, regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2);
-        row.splice(12, 0, countSpe[i]);
+        row.splice(12, 0, countSpe);
     }
-
-    // // var cohortes = [];
-    // data.forEach((el, i) => {
-    //     let spe = el[40]
-    //     el.splice(40, 1); // idem pour spe
-    //     el.splice(17, 0, spe);
-    //     el.splice(18, 0, "");
-    //     el.splice(19, 0, "");
-    // });
-
-    var select = $('#selectCohortes-btn');
-    // suppression des options existantes
-    select.find('option').remove();
-    // implémentation liste options complète
-    for (var i = 0, lgi = cohortesOptions.length; i < lgi; i++) {
-        select.append('<option value="' + cohortesOptions[i] + '">' + cohortesOptions[i] + '</option>')
-    }
-    var cohortes = [...new Set(data.map(el => el[4]))];
-    var cohortTitle = cohortes[0];
-
-    cohortes = cohortes.slice(1, cohortes.length);
-
-    // console.log(d3.csvParse(Papa.unparse(data)));
 
     setTimeout(() => {
         launchTab(d3.csvParse(Papa.unparse(data))); // dataToTable(data, cohortes, cohortTitle);
-    }, 1000);
+    }, 100);
 
     console.log("globalReport end " + (new Date() - timeProcess) + "ms");
     return true;
@@ -1006,6 +984,10 @@ function launchTab(jsonFromCSV) {
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         }, 10)
     }
+
+    $("#deselectAll-rows").click(function(){
+        table.deselectRow();
+    });
 
     document.getElementById('exportCSV-btn').onclick = function(e) {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
