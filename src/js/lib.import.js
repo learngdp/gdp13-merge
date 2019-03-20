@@ -17,6 +17,7 @@ var Tabulator = require('tabulator-tables');
 
 var Collection = require('lodash/collection');
 var Array = require('lodash/array');
+var String = require('lodash/string')
 
 const d3 = Object.assign({},
     require("d3-format"),

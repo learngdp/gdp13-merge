@@ -118,9 +118,9 @@ function launchTab(jsonFromCSV, absences) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [];
         if (groupValues) {
-            var fields = _.compact(groupValues.split(/[\;\,]+/));
+            var fields = Array.compact(groupValues.split(/[\;\,]+/));
             // console.log(fields, headers.indexOf(fields.join('')));
-            fields = fields.map(header => _.trim(header)).filter(header => headers.indexOf(header) != -1);
+            fields = fields.map(header => String.trim(header)).filter(header => headers.indexOf(header) != -1);
             if (fields.length > 0) {
                 table.setGroupBy(fields);
                 this.innerHTML = '<i class="fas fa-lock"></i>'
