@@ -118,7 +118,7 @@ function launchTab(jsonFromCSV, absences) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [];
         if (groupValues) {
-            var fields = Array.compact(groupValues.split(/[\;\,]+/));
+            var fields = Array.compact(groupValues.split(/[\;\,\>]+/));
             // console.log(fields, headers.indexOf(fields.join('')));
             fields = fields.map(header => String.trim(header)).filter(header => headers.indexOf(header) != -1);
             if (fields.length > 0) {
@@ -128,10 +128,17 @@ function launchTab(jsonFromCSV, absences) {
         }
     }
 
-    document.getElementById('degroupBy-btn').onclick = function (e) {
+    document.getElementById('groupBy-btn').onmouseover = function(e) {
+        var title = document.getElementById('groupBy-input').value ? "grouper par: " + document.getElementById('groupBy-input').value :
+            "grouper par entête"
+        e.target.title = title;
+    };
+
+    document.getElementById('degroupBy-btn').onclick = function(e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
         document.getElementById('groupBy-btn').innerHTML = '<i class="fas fa-lock-open"></i>'
+        document.getElementById('groupBy-btn').title = "grouper par entête"
     }
 
     document.getElementById('hide-col').onclick = function () {

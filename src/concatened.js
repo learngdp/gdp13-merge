@@ -669,6 +669,7 @@ function tableOptions(data, columns) {
         paginationSize: 50,
         movableColumns: true,
         headerFilterPlaceholder: "filtre par mot-clé...",
+        groupStartOpen: false,
         footerElement: footerContent,
         history: true,
         tooltips: true,
@@ -705,8 +706,7 @@ function setDataColumns(headersColumns) {
                 },
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else if (column == headersColumns[1]) {
@@ -718,8 +718,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (column == headersColumns[2]) {
@@ -731,8 +730,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else if (i > 12 && i < 18) {
@@ -745,8 +743,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else if (i == 9 || i == 18) {
@@ -758,8 +755,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else if (i > 18 && i < 39) {
@@ -772,8 +768,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else if (i > 39 && i < 44) {
@@ -785,8 +780,7 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         } else {
@@ -797,13 +791,17 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 headerContext: function(e, column) {
                     e.preventDefault();
-                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
-                    document.getElementById('groupBy-input').value = groupByValue;
+                    groupByField(column.getField());
                 }
             });
         }
     })
     return columns;
+}
+
+function groupByField(field) {
+    var fieldValues = (document.getElementById('groupBy-input').value) ? (document.getElementById('groupBy-input').value + ' > ' + field) : field;
+    document.getElementById('groupBy-input').value = fieldValues.replace(/^[\s\>]/, "");
 }
 
 function replaceDataAfterLoaded(table, data, diff, timer) {
@@ -1072,7 +1070,7 @@ function launchTab(jsonFromCSV, absences) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [];
         if (groupValues) {
-            var fields = Array.compact(groupValues.split(/[\;\,]+/));
+            var fields = Array.compact(groupValues.split(/[\;\,\>]+/));
             // console.log(fields, headers.indexOf(fields.join('')));
             fields = fields.map(header => String.trim(header)).filter(header => headers.indexOf(header) != -1);
             if (fields.length > 0) {
@@ -1082,10 +1080,17 @@ function launchTab(jsonFromCSV, absences) {
         }
     }
 
-    document.getElementById('degroupBy-btn').onclick = function (e) {
+    document.getElementById('groupBy-btn').onmouseover = function(e) {
+        var title = document.getElementById('groupBy-input').value ? "grouper par: " + document.getElementById('groupBy-input').value :
+            "grouper par entête"
+        e.target.title = title;
+    };
+
+    document.getElementById('degroupBy-btn').onclick = function(e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
         document.getElementById('groupBy-btn').innerHTML = '<i class="fas fa-lock-open"></i>'
+        document.getElementById('groupBy-btn').title = "grouper par entête"
     }
 
     document.getElementById('hide-col').onclick = function () {
