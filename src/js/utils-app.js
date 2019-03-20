@@ -6,7 +6,7 @@ const formatPercent = d3.format(".0%");
 Tabulator.prototype.extendModule("format", "formatters", {
     numberfmt: function(cell, formatterParams) {
         var cellFormatted;
-        if ( (/\,/g).test(cell.getValue()) ) {
+        if ((/\,/g).test(cell.getValue())) {
             cellFormatted = cell.getValue().split(",").map(val => isNaN(parseFloat(val)) ? "" : formatPercent(parseFloat(val))).join(", ");
         } else {
             cellFormatted = isNaN(parseFloat(cell.getValue())) ? cell.getValue() : formatPercent(parseFloat(cell.getValue()))
@@ -17,10 +17,15 @@ Tabulator.prototype.extendModule("format", "formatters", {
 
 // options for table
 function tableOptions(data, columns) {
-    var footerContent = '<span class="footerInfo">nombre de lignes: <span id="rowsCount" style="font-weight: 900"></span> (filtrées)';
-        footerContent += '<span style="margin-left: 2em">absences: </span><span id="absences" style="font-weight: 900; color:red"></span> (au total)</span>';
+    var footerContent = '<div class="footerInfo">lignes: <span id="rowsTotal" style="font-weight: 900">'+ data.length +'</span>';
+        footerContent += '<span style="margin-left: 1em">colonnes: </span><span id="columnsTotal" style="font-weight: 900">'+ columns.length +'</span>';
+        footerContent += '<div style="margin-left: 10em;" class="inline">';
+        footerContent += '<span>lignes: </span><span id="rowsCount" style="font-weight: 900"></span> (filtrée.s)';
+        footerContent += '<span style="margin-left: 2em">sélection: </span><span id="rowSelected" style="font-weight: 900"></span> (ligne.s)';
+        footerContent += '<span style="margin-left: 2em">total absence.s: </span><span id="absences" style="font-weight: 900; color:red"></span>'
+        footerContent += '</div></div>';
     return {
-        selectable:true,
+        selectable: true,
         height: 800,
         data: data,
         reactiveData: true,
@@ -36,38 +41,48 @@ function tableOptions(data, columns) {
         initialSort: [
             { column: "Student ID", dir: "asc" },
         ],
-        rowClick: function(e, row) {
-            console.log(row);
-        },
+        rowClick: function(e, row) {},
         rowSelectionChanged: function(data, rows) {
-            $("#select-stats span").text(data.length);
+            document.getElementById('rowSelected').innerHTML = data.length;
         },
-        dataFiltered:function(filters, rows){
+        dataFiltered: function(filters, rows) {
             document.getElementById('rowsCount').innerHTML = rows.length;
         },
     }
 }
 
+//
 function setDataColumns(headersColumns) {
-    var columns = [], name;
+    var columns = [],
+        name;
     headersColumns.forEach((column, i) => {
         name = columnName(column);
         if (column == headersColumns[0]) {
-            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                frozen: true,
+                headerFilter: "input",
+                cellClick: function(e, cell) {
+                    var rowData = Object.entries(cell.getRow().getData());
+                    createTable(["entête", "valeur"], rowData, "pvtTable")
+                }
+            });
         } else if (column == headersColumns[1]) {
-            columns.push({ title: name, field: column, frozen: true, headerFilter: "input" }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
+            columns.push({ id: i, title: name, field: column, frozen: true, headerFilter: "input" }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (column == headersColumns[2]) {
-            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, visible: false, headerFilter: "input" });
         } else if (i > 12 && i < 18) {
-            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
         } else if (i == 9 || i == 18) {
-            columns.push({ title: name, field: column, formatter: "numberfmt", headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", headerFilter: "input" });
         } else if (i > 18 && i < 39) {
-            columns.push({ title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
         } else if (i > 39 && i < 44) {
-            columns.push({ title: name, field: column, visible: false, headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, visible: false, headerFilter: "input" });
         } else {
-            columns.push({ title: name, field: column, headerFilter: "input" });
+            columns.push({ id: i, title: name, field: column, headerFilter: "input" });
         }
     })
     return columns;
@@ -78,6 +93,7 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
         setTimeout(() => {
             table.replaceData(data)
                 .then(function() {
+                    document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
                     console.log("replaceData " + (new Date() - timeProcess) + "ms");
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
@@ -95,7 +111,8 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
 }
 
 /* HELPERS */
-function columnName(name) { regexEvalHebdo
+function columnName(name) {
+    regexEvalHebdo
     if (regexHeadersSPE.test(name)) {
         return name.match(regexHeadersSPE)[0].replace(/\s\-/, "");
     } else if (regexEvalHebdo.test(name)) {
@@ -147,8 +164,6 @@ function commaToPoint(row) {
     return newRow;
 }
 
-// Remove null, 0, blank, false, undefined and NaN values from an array
-// https://www.w3resource.com/javascript-exercises/javascript-array-exercise-24.php
 function filter_array(test_array) {
     var index = -1,
         arr_length = test_array ? test_array.length : 0,
@@ -166,19 +181,14 @@ function filter_array(test_array) {
 
 // export du fichier csv avec fileSaver.js
 function exportCSVDefault(data, filename) {
-    // var dataPoint = data.map(row => convertToLocale(row));
-    // console.log(data, filename);
     var dataPointToCSV = Papa.unparse(data);
-    var BOM = "\uFEFF"; // issue https://github.com/eligrey/FileSaver.js/issues/28
+    var BOM = "\uFEFF";
     var csvDataPoint = BOM + dataPointToCSV;
     var blob = new Blob([csvDataPoint], { type: "text/csv;charset=utf-8" });
     saveAs(blob, filename + ".csv");
 }
 
 /* SWEET ALERT and CREATE TABLE */
-
-
-/* SweetAlert */
 
 function prettyDefault(title, text, html, icon, className) {
     swal({ title: title, text: text, content: html, icon: icon, className: className }).then(value => {
@@ -199,24 +209,27 @@ function prettyDefaultControl(title, text, html, icon) {
 }
 
 // création simple de table html pour sweetALert pvtTable
-function createTable(data, headers, className) {
-    // console.log(data, headers);
-    table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
+function createTable(headers, data, className) {
+    var html = document.createElement("div"),
+        p = document.createElement("p"),
+        title = "Info participant",
+        text = "";
+    var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
     table += '<thead><tr>';
     headers.forEach(header => {
-        // console.log(header);
         table += '<th>' + header + '</th>';
     });
     table += '</tr></thead>';
     table += '<tbody>';
     data.forEach(row => {
-        // console.log(row.length);
         table += '<tr>';
-        row.forEach(cell => {
-            table += '<td>' + cell + '</td>';
-        })
+        table += '<td>' + row[0] + '</td>';
+        table += '<td>' + row[1] + '</td>';
         table += '</tr>';
     });
     table += '</tbody></table>';
-    return table;
+
+    html.appendChild($.parseHTML(table)[0]);
+    prettyDefault(title, text, html, "");
+    return true;
 }
