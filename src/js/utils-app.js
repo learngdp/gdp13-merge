@@ -66,23 +66,107 @@ function setDataColumns(headersColumns) {
                 headerFilter: "input",
                 cellClick: function(e, cell) {
                     var rowData = Object.entries(cell.getRow().getData());
+                    // console.log(["entête", "valeur"], rowData, "pvtTable");
                     createTable(["entête", "valeur"], rowData, "pvtTable")
+                },
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
                 }
             });
         } else if (column == headersColumns[1]) {
-            columns.push({ id: i, title: name, field: column, frozen: true, headerFilter: "input" }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                frozen: true,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (column == headersColumns[2]) {
-            columns.push({ id: i, title: name, field: column, visible: false, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                visible: false,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         } else if (i > 12 && i < 18) {
-            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                formatter: "numberfmt",
+                visible: false,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         } else if (i == 9 || i == 18) {
-            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                formatter: "numberfmt",
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         } else if (i > 18 && i < 39) {
-            columns.push({ id: i, title: name, field: column, formatter: "numberfmt", visible: false, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                formatter: "numberfmt",
+                visible: false,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         } else if (i > 39 && i < 44) {
-            columns.push({ id: i, title: name, field: column, visible: false, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                visible: false,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         } else {
-            columns.push({ id: i, title: name, field: column, headerFilter: "input" });
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "input",
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    var groupByValue = document.getElementById('groupBy-input').value + ',' + column.getField();
+                    document.getElementById('groupBy-input').value = groupByValue;
+                }
+            });
         }
     })
     return columns;
