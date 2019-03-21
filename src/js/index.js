@@ -5,14 +5,14 @@ var timeProcess;
 var allHeaders = [];
 var filesNb = 0;
 
-fileInput.onchange = function(e) {
+fileInput.onchange = function (e) {
     timeProcess = new Date();
     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
     this.disabled = true;
 
     var files = [...fileInput.files];
     // files = files.sort((a, b) => b.size - a.size);
-    files = files.sort( function(x, y) {
+    files = files.sort(function (x, y) {
         x = regexFileNamesTemplate.test(x.name) ? x.name.match(regexFileNamesTemplate)[0] : x.name;
         y = regexFileNamesTemplate.test(y.name) ? y.name.match(regexFileNamesTemplate)[0] : y.name;
         return fileNamesTemplate[x] - fileNamesTemplate[y];
@@ -31,7 +31,7 @@ fileInput.onchange = function(e) {
     // console.log(promises);
 
     Promise.all(promises)
-        .then(function(data) {
+        .then(function (data) {
             let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
             setTimeout(() => {
                 // console.log(data, uniqueHeaders, totalSize);
@@ -40,9 +40,13 @@ fileInput.onchange = function(e) {
             }, 10);
 
         })
-        .catch(function(error) {
+        .catch(function (error) {
             console.log(error);
-            swal({ title: "Information error", text: "Oops! " + error, icon: "warning" });
+            swal({
+                title: "Information error",
+                text: "Oops! " + error,
+                icon: "warning"
+            });
         });
     console.log("timeProcess: " + (new Date() - timeProcess) + "ms");
 }
@@ -51,7 +55,7 @@ fileInput.onchange = function(e) {
 function getDataFiles(file) {
     // var delimiter = document.getElementById('delimiter-input').value;
     // console.log(delimiter);
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         var reader = new FileReader();
         reader.onload = (event) => {
             // console.log(event);
@@ -63,7 +67,7 @@ function getDataFiles(file) {
                 dynamicTyping: true,
                 // delimiter: delimiter ? delimiter[0] : "",
                 skipEmptyLines: true, // 'greedy',
-                chunk: function(results, parser) {
+                chunk: function (results, parser) {
                     flag = checkHeaders(results.meta.fields, file);
                     if (flag) {
                         dataByFile[file.name] = results.data;
@@ -73,7 +77,7 @@ function getDataFiles(file) {
                         reject("erreur entêtes de colonnes");
                     }
                 },
-                complete: function(results) {
+                complete: function (results) {
                     console.log('done! ', file.name, (new Date() - timeProcess) + "ms")
                 }
             });
@@ -89,7 +93,7 @@ function getDataFiles(file) {
 
 function flatData(dataFiles, uniqueHeaders) {
     console.log("flatData: " + (new Date() - timeProcess) + "ms");
-    return new Promise(function(resolve) {
+    return new Promise(function (resolve) {
         var dataSelected = [],
             flat = [];
 
@@ -97,15 +101,15 @@ function flatData(dataFiles, uniqueHeaders) {
             dataFiles.forEach(file => {
                 dataSelected.push(file[Object.keys(file)[0]].map(obj => {
                     if (regexAllSPE.test(Object.keys(file)[0]))
-                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/\_/g, '');
+                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
                     return obj;
                 }));
             });
         } else {
             // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
-                    if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
-                        obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/\_/g, '');
+                if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
+                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
                 return obj;
             }));
         }
@@ -123,7 +127,7 @@ function flatData(dataFiles, uniqueHeaders) {
         var dataMerged = mergedDataTest(uniqueHeaders, flat).sort((a, b) => a[0] - b[0]);
 
         // *** traque et filtre les id vide, undefined, retour à la ligne
-        var checkWrongID = function(array) {
+        var checkWrongID = function (array) {
             var headers = array[0].map(header => header.trim());
             var testCsv = [];
             array.forEach((el, i) => {
@@ -140,9 +144,9 @@ function flatData(dataFiles, uniqueHeaders) {
 
         // console.log(dataMerged);
 
-        var getDataMappage = function(result) {
+        var getDataMappage = function (result) {
             var delimiter = Papa.parse(result).meta.delimiter;
-            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function(d) {
+            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function (d) {
                 // ( d["Student ID"] != undefined && /^(\r\n|\r|\n)$/.test(d["Student ID"].toString()) )
                 // console.log(d[0], /^(\r\n|\r|\n)$/.test(d[0]));
                 if (d && d !== undefined && d[0].length !== 0) return d;
@@ -150,21 +154,24 @@ function flatData(dataFiles, uniqueHeaders) {
             var dataMappage = d3.csvParse(Papa.unparse(dataResult));
             // console.log(data.flat, dataMappage);
             if (dataResult !== undefined && checkProfile(dataResult)) {
-                resolve({ flat: dataMerged , dataMappage: dataMappage });
+                resolve({
+                    flat: dataMerged,
+                    dataMappage: dataMappage
+                });
                 // setTimeout(() => launchDataMappage(data.flat, dataMappage), 500);
             }
         }
 
-        document.getElementById('fileInputMappage').onchange = function(e) {
+        document.getElementById('fileInputMappage').onchange = function (e) {
             this.disabled = true;
             document.getElementById('profil_info-div').firstElementChild.classList.replace('labelProfile', 'normal');
             $('.fa-arrow-alt-circle-right').removeClass('blink');
             document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             var file = this.files[0];
             var reader = new FileReader();
-            reader.onprogress = function(event) {}
-            reader.onloadend = function(event) {}
-            reader.onload = function(event) {
+            reader.onprogress = function (event) {}
+            reader.onloadend = function (event) {}
+            reader.onload = function (event) {
                 getDataMappage(reader.result);
             }
             reader.readAsText(file);
@@ -181,10 +188,10 @@ function tableForFiles(dataFiles, uniqueHeaders) {
     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
 
     flatData(dataFiles, uniqueHeaders)
-        .then(function(data) {
+        .then(function (data) {
             var flat = d3.csvParse(Papa.unparse(data.flat));
             var dataMappage = data.dataMappage;
-            var jsonData = flat.map(function(obj, i) {
+            var jsonData = flat.map(function (obj, i) {
                 var username;
                 if (obj["Username"] && obj["Username"] !== undefined) {
                     username = (isNaN(obj["Username"])) ? obj["Username"] : (obj["Username"]).toString();
@@ -212,9 +219,13 @@ function tableForFiles(dataFiles, uniqueHeaders) {
                     console.log("tabulator launch !" + (new Date() - timeProcess) + "ms");
                 }
             }, 10);
-        }).catch(function(error) {
+        }).catch(function (error) {
             console.log(error);
-            swal({ title: "Information error", text: error.toString(), icon: "warning" });
+            swal({
+                title: "Information error",
+                text: error.toString(),
+                icon: "warning"
+            });
         });
 }
 
@@ -297,7 +308,7 @@ function sortObjectKeys(obj, keys) {
 
 function checkHeaders(headers, file) {
     var flag;
-    headers.forEach(function(title, i) {
+    headers.forEach(function (title, i) {
         var headersElement = headersTemplate[headersTemplate.indexOf(title.trim())];
         // console.log(title, title == title.trim(), headersElement, headersTemplate.indexOf(title.trim()));
         if (headersTemplate.indexOf(title.trim()) === -1) {
@@ -336,7 +347,7 @@ function checkProfile(data) {
 }
 
 function findFilesDuplicates(fileNames) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         var gradesImported = [];
         filesNames.map(name => {
             if (name.match(regexAll)) return name.match(regexAll);
