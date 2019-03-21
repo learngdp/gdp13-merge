@@ -8,6 +8,7 @@ document.addEventListener('touchstart', function addtouchclass(e) { // first tim
 }, false)
 
 /********************************* */
+import 'normalize.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import './style.css';
 
@@ -44,58 +45,10 @@ import {
     library,
     dom
 } from "@fortawesome/fontawesome-svg-core";
-import {
-    faCog
-} from '@fortawesome/free-solid-svg-icons/faCog';
-import {
-    faCheckSquare
-} from '@fortawesome/free-solid-svg-icons/faCheckSquare';
-import {
-    faDownload
-} from '@fortawesome/free-solid-svg-icons/faDownload';
-import {
-    faEraser
-} from '@fortawesome/free-solid-svg-icons/faEraser';
-import {
-    faExternalLinkAlt
-} from '@fortawesome/free-solid-svg-icons/faExternalLinkAlt';
-import {
-    faEye
-} from '@fortawesome/free-solid-svg-icons/faEye';
-import {
-    faEyeSlash
-} from '@fortawesome/free-solid-svg-icons/faEyeSlash';
-import {
-    faLock
-} from '@fortawesome/free-solid-svg-icons/faLock';
-import {
-    faLockOpen
-} from '@fortawesome/free-solid-svg-icons/faLockOpen';
-import {
-    faUndoAlt
-} from '@fortawesome/free-solid-svg-icons/faUndoAlt';
-import {
-    faArrowAltCircleRight
-} from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
-import {
-    faTable
-} from '@fortawesome/free-solid-svg-icons/faTable';
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
 
-library.add(
-    faCog,
-    faCheckSquare,
-    faDownload,
-    faEraser,
-    faExternalLinkAlt,
-    faEye,
-    faEyeSlash,
-    faLock,
-    faLockOpen,
-    faUndoAlt,
-    faArrowAltCircleRight,
-    faTable
-);
-
+library.add(fas, far)
 dom.watch();
 
 window.addEventListener('load', function () {

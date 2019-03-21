@@ -21,6 +21,7 @@
     "d3": "^5.9.2",
     "file-saver": "^2.0.1",
     "lodash": "^4.17.11",
+    "normalize.css": "^8.0.1",
     "papaparse": "^4.6.3",
     "sweetalert": "^2.1.2",
     "tabulator-tables": "^4.2.3",

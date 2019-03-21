@@ -312,6 +312,27 @@ function createTable(headers, data, className) {
     table += '</tbody></table>';
 
     html.appendChild($.parseHTML(table)[0]);
-    prettyDefault(title, text, html, "");
+    swal({
+        title: title,
+        text: text,
+        content: html,
+        className: "sweetalert-auto",
+        buttons: {
+            export: "export CSV",
+            annuler: true,
+        },
+    })
+    .then((value) => {
+        switch (value) {
+            case "export":
+                data.unshift(headers)
+                exportCSVDefault(data, "participant_info")
+                break;
+
+            default:
+                break;
+        }
+    });
+    // prettyDefault(title, text, html, "sweetalert-auto");
     return true;
 }

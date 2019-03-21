@@ -134,25 +134,25 @@ const headersByCategories = {
     ]
 };
 
-const fileNamesTemplate = [
-    "PA_12",
-    "SPE-DFS",
-    "SPE-PAE",
-    "SPE-TRIZ",
-    "SPE-PMI",
-    "SPE-PAE",
-    "SPE-IEF",
-    "SPE-MVP",
-    "SPE-GPAS",
-    "SPE-MCB",
-    "SPE-G2C",
-    "SPE-AS",
-    "SPE-EIP",
-    "SPE-AF",
-    "SPE-MRP",
-    "SPE-MEP",
-    "TC_12"
-];
+const fileNamesTemplate = {
+    "_TC_": 1,
+    "_SPE-DFS_": 2,
+    "_SPE-MCB_": 3,
+    "_SPE-MEP_": 4,
+    "_SPE-IEF_": 5,
+    "_SPE-PMI_": 6,
+    "_SPE-AF_": 7,
+    "_SPE-AS_": 8,
+    "_SPE-EIP_": 9,
+    "_SPE-PAV_": 10,
+    "_SPE-MVP_": 11,
+    "_SPE-GPAS_": 12,
+    "_SPE-MRP_": 13,
+    "_SPE-TRIZ_": 14,
+    "_SPE-G2C_": 15,
+    "_SPE-PAE_": 16,
+    "_PA_": 17,
+};
 
 const patternMail =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -162,6 +162,8 @@ const regexPA = /_PA_\d{2}_/
 const regexSPE = /_SPE-\w{2,4}_/;
 
 const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
+
+const regexFileNamesTemplate = /_(SPE-\w{2,4}|PA|TC)_/;
 
 // pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;

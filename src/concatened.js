@@ -8,6 +8,7 @@ document.addEventListener('touchstart', function addtouchclass(e) { // first tim
 }, false)
 
 /********************************* */
+import 'normalize.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import './style.css';
 
@@ -44,58 +45,10 @@ import {
     library,
     dom
 } from "@fortawesome/fontawesome-svg-core";
-import {
-    faCog
-} from '@fortawesome/free-solid-svg-icons/faCog';
-import {
-    faCheckSquare
-} from '@fortawesome/free-solid-svg-icons/faCheckSquare';
-import {
-    faDownload
-} from '@fortawesome/free-solid-svg-icons/faDownload';
-import {
-    faEraser
-} from '@fortawesome/free-solid-svg-icons/faEraser';
-import {
-    faExternalLinkAlt
-} from '@fortawesome/free-solid-svg-icons/faExternalLinkAlt';
-import {
-    faEye
-} from '@fortawesome/free-solid-svg-icons/faEye';
-import {
-    faEyeSlash
-} from '@fortawesome/free-solid-svg-icons/faEyeSlash';
-import {
-    faLock
-} from '@fortawesome/free-solid-svg-icons/faLock';
-import {
-    faLockOpen
-} from '@fortawesome/free-solid-svg-icons/faLockOpen';
-import {
-    faUndoAlt
-} from '@fortawesome/free-solid-svg-icons/faUndoAlt';
-import {
-    faArrowAltCircleRight
-} from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
-import {
-    faTable
-} from '@fortawesome/free-solid-svg-icons/faTable';
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
 
-library.add(
-    faCog,
-    faCheckSquare,
-    faDownload,
-    faEraser,
-    faExternalLinkAlt,
-    faEye,
-    faEyeSlash,
-    faLock,
-    faLockOpen,
-    faUndoAlt,
-    faArrowAltCircleRight,
-    faTable
-);
-
+library.add(fas, far)
 dom.watch();
 
 window.addEventListener('load', function () {
@@ -114,8 +67,12 @@ fileInput.onchange = function(e) {
     this.disabled = true;
 
     var files = [...fileInput.files];
-    // console.log(files);
-    files = files.sort((a, b) => b.size - a.size);
+    // files = files.sort((a, b) => b.size - a.size);
+    files = files.sort( function(x, y) {
+        x = regexFileNamesTemplate.test(x.name) ? x.name.match(regexFileNamesTemplate)[0] : x.name;
+        y = regexFileNamesTemplate.test(y.name) ? y.name.match(regexFileNamesTemplate)[0] : y.name;
+        return fileNamesTemplate[x] - fileNamesTemplate[y];
+    });
     // var filesNames = files.map(file => file.name);
     // var testFiles = findFilesDuplicates(fileNames);
     // console.log(testFiles);
@@ -597,25 +554,25 @@ const headersByCategories = {
     ]
 };
 
-const fileNamesTemplate = [
-    "PA_12",
-    "SPE-DFS",
-    "SPE-PAE",
-    "SPE-TRIZ",
-    "SPE-PMI",
-    "SPE-PAE",
-    "SPE-IEF",
-    "SPE-MVP",
-    "SPE-GPAS",
-    "SPE-MCB",
-    "SPE-G2C",
-    "SPE-AS",
-    "SPE-EIP",
-    "SPE-AF",
-    "SPE-MRP",
-    "SPE-MEP",
-    "TC_12"
-];
+const fileNamesTemplate = {
+    "_TC_": 1,
+    "_SPE-DFS_": 2,
+    "_SPE-MCB_": 3,
+    "_SPE-MEP_": 4,
+    "_SPE-IEF_": 5,
+    "_SPE-PMI_": 6,
+    "_SPE-AF_": 7,
+    "_SPE-AS_": 8,
+    "_SPE-EIP_": 9,
+    "_SPE-PAV_": 10,
+    "_SPE-MVP_": 11,
+    "_SPE-GPAS_": 12,
+    "_SPE-MRP_": 13,
+    "_SPE-TRIZ_": 14,
+    "_SPE-G2C_": 15,
+    "_SPE-PAE_": 16,
+    "_PA_": 17,
+};
 
 const patternMail =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -625,6 +582,8 @@ const regexPA = /_PA_\d{2}_/
 const regexSPE = /_SPE-\w{2,4}_/;
 
 const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
+
+const regexFileNamesTemplate = /_(SPE-\w{2,4}|PA|TC)_/;
 
 // pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
@@ -946,7 +905,28 @@ function createTable(headers, data, className) {
     table += '</tbody></table>';
 
     html.appendChild($.parseHTML(table)[0]);
-    prettyDefault(title, text, html, "");
+    swal({
+        title: title,
+        text: text,
+        content: html,
+        className: "sweetalert-auto",
+        buttons: {
+            export: "export CSV",
+            annuler: true,
+        },
+    })
+    .then((value) => {
+        switch (value) {
+            case "export":
+                data.unshift(headers)
+                exportCSVDefault(data, "participant_info")
+                break;
+
+            default:
+                break;
+        }
+    });
+    // prettyDefault(title, text, html, "sweetalert-auto");
     return true;
 }
 

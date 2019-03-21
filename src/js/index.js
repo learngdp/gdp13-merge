@@ -11,8 +11,12 @@ fileInput.onchange = function(e) {
     this.disabled = true;
 
     var files = [...fileInput.files];
-    // console.log(files);
-    files = files.sort((a, b) => b.size - a.size);
+    // files = files.sort((a, b) => b.size - a.size);
+    files = files.sort( function(x, y) {
+        x = regexFileNamesTemplate.test(x.name) ? x.name.match(regexFileNamesTemplate)[0] : x.name;
+        y = regexFileNamesTemplate.test(y.name) ? y.name.match(regexFileNamesTemplate)[0] : y.name;
+        return fileNamesTemplate[x] - fileNamesTemplate[y];
+    });
     // var filesNames = files.map(file => file.name);
     // var testFiles = findFilesDuplicates(fileNames);
     // console.log(testFiles);

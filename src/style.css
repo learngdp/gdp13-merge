@@ -1,5 +1,5 @@
 body {
-  padding: 2px;
+  padding: 5px;
 }
 
 .footerInfo {
@@ -26,11 +26,13 @@ body {
 
 button,
 select {
+  font-size: 90%;
   height: 24px;
   cursor: pointer;
 }
 
 input[type="text"] {
+  font-size: 90%;
   height: 18px;
 }
 
@@ -61,17 +63,17 @@ input[type="text"] {
 
 @keyframes blinker {
   50% {
-      opacity: 0;
+    opacity: 0;
   }
 }
 
 @keyframes spin {
   0% {
-      transform: rotate(0deg);
+    transform: rotate(0deg);
   }
 
   100% {
-      transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
@@ -92,8 +94,16 @@ input[type="text"] {
   text-align: center;
 }
 
+.swal-button {
+  padding: 2px 5px;
+}
+
 .sweetalert-lg {
   width: 800px;
+}
+
+.sweetalert-auto {
+  width: auto;
 }
 
 .sweetalert-img {
@@ -120,6 +130,10 @@ table.pvtTable thead tr th {
   padding: 2px;
 }
 
+table.pvtTable thead tr th:first-child {
+  width: auto;
+}
+
 table.pvtTable tbody tr th {
   background-color: #F0F5FE;
   border: 1px solid #CDCDCD;
@@ -135,3 +149,6 @@ table.pvtTable tbody tr td {
   vertical-align: top;
 }
 
+table.pvtTable tbody tr td:first-child {
+  width: auto;
+}
