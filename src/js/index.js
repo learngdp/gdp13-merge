@@ -101,7 +101,7 @@ function flatData(dataFiles, uniqueHeaders) {
             dataFiles.forEach(file => {
                 dataSelected.push(file[Object.keys(file)[0]].map(obj => {
                     if (regexAllSPE.test(Object.keys(file)[0]))
-                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
+                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/[13_]/g, '').replace(/SPE\-/, "");
                     return obj;
                 }));
             });
@@ -109,7 +109,7 @@ function flatData(dataFiles, uniqueHeaders) {
             // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
-                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
+                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[13_]/g, '').replace(/SPE\-/, "");
                 return obj;
             }));
         }

@@ -157,7 +157,7 @@ function flatData(dataFiles, uniqueHeaders) {
             dataFiles.forEach(file => {
                 dataSelected.push(file[Object.keys(file)[0]].map(obj => {
                     if (regexAllSPE.test(Object.keys(file)[0]))
-                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
+                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/[13_]/g, '').replace(/SPE\-/, "");
                     return obj;
                 }));
             });
@@ -165,7 +165,7 @@ function flatData(dataFiles, uniqueHeaders) {
             // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
-                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/\_/g, '').replace(/SPE\-/, "");
+                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[13_]/g, '').replace(/SPE\-/, "");
                 return obj;
             }));
         }
@@ -961,9 +961,10 @@ function globalReport(jsonData) {
 
     var data = dataFromCSV.map(row => commaToPoint(row));
 
-    var headersReportSpe = [data[0].slice(17, 32)];
-
+    var headersSpe = [data[0].slice(17, 32)];
     var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
+
+
 
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
@@ -972,8 +973,7 @@ function globalReport(jsonData) {
     data[0].splice(11, 0, '2ème SPE');
     data[0].splice(12, 0, 'SPE validées'); // pour ajouter la colonne avant de pousser le nombre de spé validées
 
-    var pass70 = 0.695,
-        row, countSpe;
+    // console.log(data[0]);
 
     var pass70 = 0.695,
         absences = 0,
@@ -982,32 +982,70 @@ function globalReport(jsonData) {
     for (var i = 0, lgi = data.slice(1, data.length).length; i < lgi; i++) {
         row = data.slice(1, data.length)[i];
 
+        var cohortName = row[5];
+        var grades = row[6] != undefined ? row[6].split(',') : "";
+        var enrollmentTrack = row[33] != undefined ? row[33].split(',') : "";
+        var fusionnes = row[39] != undefined ? row[39].split(',') : "";
+
+        var verifieldTuples = {};
+        enrollmentTrack.forEach((track, i) => {
+            verifieldTuples[fusionnes[i]] = track;
+        });
+
         if (row[3] === "Absent sur profile_info")
             absences++;
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
+        // console.log(rangeSpe[i].filter(el => el != 0).length, countSpe, pass70);
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader1 = (max1 > pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersReportSpe[0][
+        var cellHeader1 = (max1 > pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][
             rangeSpe[i].indexOf(max1)
         ] : "";
         if (rangeSpe[i].length > 1 && rangeSpe[i].indexOf(max1) !== -1) rangeSpe[i].splice(
             rangeSpe[i].indexOf(max1), 1, 0);
 
         var max2 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersReportSpe[0][
+        var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][
             rangeSpe[i].indexOf(max2)
         ] : "";
-        if (cellHeader2 === cellHeader1) cellHeader2 = "";
+        if (cellHeader2 === cellHeader1)
+            cellHeader2 = "";
 
-        row.splice(6, 0, "");
+        cellHeader1 = regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1;
+        cellHeader2 = regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2;
+
+        // *** bien voir la formule avec les SI OU ET
+        // *** pour donner les OUI NON EN ATTENTE
+        var attestationPC,
+            attestationPA;
+        if (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && verifieldTuples["TC"] == "verified" &&
+            verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified") {
+            attestationPC = "OUI";
+        } else {
+            attestationPC = "NON";
+        }
+        // ***
+
+        // Attestation PC
+        row.splice(6, 0, attestationPC);
+
+        // Attestation PA
         row.splice(7, 0, "");
+
+
         row.splice(8, 0, "");
 
-        row.splice(10, 0, regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1);
-        row.splice(11, 0, regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2);
+        // grade
+        // row[9] = row[9].split(",").map(grade => isNaN(parseFloat(grade)) ? "" : formatPercent(parseFloat(grade))).join(", ");
+
+        row.splice(10, 0, cellHeader1);
+        row.splice(11, 0, cellHeader2);
         row.splice(12, 0, countSpe);
+
+        // if( i == 50)
+        //     break;
     }
 
     setTimeout(() => {
@@ -1017,7 +1055,6 @@ function globalReport(jsonData) {
     console.log("globalReport end " + (new Date() - timeProcess) + "ms");
     return true;
 }
-
 
 function launchTab(jsonFromCSV, absences) {
     console.log("start " + (new Date() - timeProcess) + "ms");
