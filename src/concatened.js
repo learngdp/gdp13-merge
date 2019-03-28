@@ -157,7 +157,7 @@ function flatData(dataFiles, uniqueHeaders) {
             dataFiles.forEach(file => {
                 dataSelected.push(file[Object.keys(file)[0]].map(obj => {
                     if (regexAllSPE.test(Object.keys(file)[0]))
-                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/[12_]/g, '').replace(/SPE\-/, "");
+                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
                     return obj;
                 }));
             });
@@ -165,7 +165,7 @@ function flatData(dataFiles, uniqueHeaders) {
             // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
-                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[12_]/g, '').replace(/SPE\-/, "");
+                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
                 return obj;
             }));
         }
@@ -654,7 +654,6 @@ function tableOptions(data, columns) {
         paginationSize: 50,
         movableColumns: true,
         headerFilterPlaceholder: "filtre par mot-clé...",
-        groupStartOpen: false,
         footerElement: footerContent,
         history: true,
         tooltips: true,
@@ -668,6 +667,13 @@ function tableOptions(data, columns) {
         dataFiltered: function(filters, rows) {
             document.getElementById('rowsCount').innerHTML = rows.length;
         },
+        groupStartOpen: function(value, count, data, group) {
+            return false;
+        },
+        groupHeader: function(value, count, data, group){
+            var groupByHeader = document.getElementById('groupBy-input').value;
+            return "<span style='color:#0000FFFF; margin-right: 5px;'>" + groupByHeader + "</span> : " + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";;
+        }
     }
 }
 
@@ -971,9 +977,7 @@ function globalReport(jsonData) {
     data[0].splice(8, 0, 'Certificat Auth');
     data[0].splice(10, 0, '1ère SPE');
     data[0].splice(11, 0, '2ème SPE');
-    data[0].splice(12, 0, 'SPE validées'); // pour ajouter la colonne avant de pousser le nombre de spé validées
-
-    // console.log(data[0]);
+    data[0].splice(12, 0, 'SPE validées');
 
     var pass70 = 0.695,
         absences = 0,
@@ -984,6 +988,7 @@ function globalReport(jsonData) {
 
         var cohortName = row[5];
         var grades = row[6] != undefined ? row[6].split(',') : "";
+        var livrableAvg = row[16];
         var enrollmentTrack = row[33] != undefined ? row[33].split(',') : "";
         var fusionnes = row[39] != undefined ? row[39].split(',') : "";
 
@@ -996,7 +1001,6 @@ function globalReport(jsonData) {
             absences++;
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
-        // console.log(rangeSpe[i].filter(el => el != 0).length, countSpe, pass70);
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
@@ -1016,38 +1020,35 @@ function globalReport(jsonData) {
         cellHeader1 = regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1;
         cellHeader2 = regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2;
 
-        // *** bien voir la formule avec les SI OU ET
-        // *** pour donner les OUI NON EN ATTENTE
         var attestationPC,
             attestationPA;
-        if (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && verifieldTuples["TC"] == "verified" &&
-            verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified") {
-            attestationPC = "OUI";
-        } else {
-            attestationPC = "NON";
-        }
-        // ***
+
+        var PC_oui = (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
+        var PA_oui = (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
+
+        var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
+        var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
+
+        // validation attestation PC
+        (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
+
+        // validation attestion PA
+        (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
+
 
         // Attestation PC
         row.splice(6, 0, attestationPC);
 
         // Attestation PA
-        row.splice(7, 0, "");
+        row.splice(7, 0, attestationPA);
 
 
         row.splice(8, 0, "");
 
-        // grade
-        // row[9] = row[9].split(",").map(grade => isNaN(parseFloat(grade)) ? "" : formatPercent(parseFloat(grade))).join(", ");
-
         row.splice(10, 0, cellHeader1);
         row.splice(11, 0, cellHeader2);
         row.splice(12, 0, countSpe);
-
-        // if( i == 50)
-        //     break;
     }
-
     setTimeout(() => {
         launchTab(d3.csvParse(Papa.unparse(data)), absences); // dataToTable(data, cohortes, cohortTitle);
     }, 100);
@@ -1101,7 +1102,7 @@ function launchTab(jsonFromCSV, absences) {
     $("#filter-field, #filter-type").change(updateFilter);
     $("#filter-value").keyup(updateFilter);
     //Clear filters on "Clear Filters" button click
-    $("#filter-clear").click(function() {
+    $("#filter-clear").click(function () {
         $("#filter-field").val("Student ID");
         $("#filter-type").val("like");
         $("#filter-value").val("");
@@ -1123,13 +1124,13 @@ function launchTab(jsonFromCSV, absences) {
         }
     }
 
-    document.getElementById('groupBy-btn').onmouseover = function(e) {
+    document.getElementById('groupBy-btn').onmouseover = function (e) {
         var title = document.getElementById('groupBy-input').value ? "grouper par: " + document.getElementById('groupBy-input').value :
             "grouper par entête"
         e.target.title = title;
     };
 
-    document.getElementById('degroupBy-btn').onclick = function(e) {
+    document.getElementById('degroupBy-btn').onclick = function (e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
         document.getElementById('groupBy-btn').innerHTML = '<i class="fas fa-lock-open"></i>'
@@ -1192,7 +1193,7 @@ function launchTab(jsonFromCSV, absences) {
         // dataExport = dataExport.map(el => el.slice(0, el.length-1)); // initialement pour enliver l'id par row
         return dataExport;
     };
-    
+
     setTimeout(() => {
         if (absences > 0)
             document.getElementById('absences').innerHTML = absences;

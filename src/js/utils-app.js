@@ -35,7 +35,6 @@ function tableOptions(data, columns) {
         paginationSize: 50,
         movableColumns: true,
         headerFilterPlaceholder: "filtre par mot-clé...",
-        groupStartOpen: false,
         footerElement: footerContent,
         history: true,
         tooltips: true,
@@ -49,6 +48,13 @@ function tableOptions(data, columns) {
         dataFiltered: function(filters, rows) {
             document.getElementById('rowsCount').innerHTML = rows.length;
         },
+        groupStartOpen: function(value, count, data, group) {
+            return false;
+        },
+        groupHeader: function(value, count, data, group){
+            var groupByHeader = document.getElementById('groupBy-input').value;
+            return "<span style='color:#0000FFFF; margin-right: 5px;'>" + groupByHeader + "</span> : " + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";;
+        }
     }
 }
 
