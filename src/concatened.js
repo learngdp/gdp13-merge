@@ -398,7 +398,12 @@ function checkProfile(data) {
             title: "Fichier profile_info",
             text: "Un des champs en entête des 4 premières colonnes ne correspond pas au champs attendus dans l'ordre suivant:\n[id] [username] [name] [email]",
             icon: "warning"
-        }).then(value => {});
+        }).then(value => {
+            document.getElementById('profil_info-div').firstElementChild.classList.replace('normal', 'labelProfile');
+            $('.fa-arrow-alt-circle-right').addClass('blink');
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            document.getElementById('fileInputMappage').disabled = false;
+        });
     return flag;
 }
 
@@ -623,7 +628,7 @@ const formatPercent = d3.format(".0%");
 /* tabulator */
 // créer un nouveau format pour les colonnes
 Tabulator.prototype.extendModule("format", "formatters", {
-    numberfmt: function(cell, formatterParams) {
+    numberfmt: function (cell, formatterParams) {
         var cellFormatted;
         if ((/\,/g).test(cell.getValue())) {
             cellFormatted = cell.getValue().split(",").map(val => isNaN(parseFloat(val)) ? "" : formatPercent(parseFloat(val))).join(", ");
@@ -636,13 +641,13 @@ Tabulator.prototype.extendModule("format", "formatters", {
 
 // options for table
 function tableOptions(data, columns) {
-    var footerContent = '<div class="footerInfo">lignes: <span id="rowsTotal" style="font-weight: 900">'+ data.length +'</span>';
-        footerContent += '<span style="margin-left: 1em">colonnes: </span><span id="columnsTotal" style="font-weight: 900">'+ columns.length +'</span>';
-        footerContent += '<div style="margin-left: 10em;" class="inline">';
-        footerContent += '<span>lignes: </span><span id="rowsCount" style="font-weight: 900"></span> (filtrée.s)';
-        footerContent += '<span style="margin-left: 2em">sélection: </span><span id="rowSelected" style="font-weight: 900"></span> (ligne.s)';
-        footerContent += '<span style="margin-left: 2em">total absence.s: </span><span id="absences" style="font-weight: 900; color:red"></span>'
-        footerContent += '</div></div>';
+    var footerContent = '<div class="footerInfo">lignes: <span id="rowsTotal" style="font-weight: 900">' + data.length + '</span>';
+    footerContent += '<span style="margin-left: 1em">colonnes: </span><span id="columnsTotal" style="font-weight: 900">' + columns.length + '</span>';
+    footerContent += '<div style="margin-left: 10em;" class="inline">';
+    footerContent += '<span>lignes: </span><span id="rowsCount" style="font-weight: 900"></span> (filtrée.s)';
+    footerContent += '<span style="margin-left: 2em">sélection: </span><span id="rowSelected" style="font-weight: 900"></span> (ligne.s)';
+    footerContent += '<span style="margin-left: 2em">total absence.s: </span><span id="absences" style="font-weight: 900; color:red"></span>'
+    footerContent += '</div></div>';
     return {
         selectable: true,
         height: 800,
@@ -657,27 +662,58 @@ function tableOptions(data, columns) {
         footerElement: footerContent,
         history: true,
         tooltips: true,
-        initialSort: [
-            { column: "Student ID", dir: "asc" },
-        ],
-        rowClick: function(e, row) {},
-        rowSelectionChanged: function(data, rows) {
+        initialSort: [{
+            column: "Student ID",
+            dir: "asc"
+        }, ],
+        rowClick: function (e, row) {},
+        rowSelectionChanged: function (data, rows) {
             document.getElementById('rowSelected').innerHTML = data.length;
         },
-        dataFiltered: function(filters, rows) {
+        dataFiltered: function (filters, rows) {
             document.getElementById('rowsCount').innerHTML = rows.length;
         },
-        groupStartOpen: function(value, count, data, group) {
+        groupStartOpen: function (value, count, data, group) {
             return false;
         },
-        groupHeader: function(value, count, data, group){
+        groupHeader: function (value, count, data, group) {
             var groupByHeader = document.getElementById('groupBy-input').value;
-            return "<span style='color:#0000FFFF; margin-right: 5px;'>" + groupByHeader + "</span> : " + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";;
+            var groupTitle;
+            var subGroups = group.getSubGroups();
+            if (subGroups.length == 0) {
+                groupTitle = "<span style='color:#0000FFFF; margin-right: 5px;' title='clic droit pour export'>" + groupByHeader + "</span> : " + value +
+                    "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
+            } else {
+                groupTitle = "<span style='color:#0000FFFF; margin-right: 5px;'>" + groupByHeader + "</span> : " + value +
+                    "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
+            }
+            return groupTitle;
+        },
+        groupContext: function (e, group) {
+            e.preventDefault();
+            var inputGroup = document.getElementById('groupBy-input').value;
+            inputGroup = inputGroup.split('>').map(el => el.trim());
+            var rowsData = [];
+            var subGroups = group.getSubGroups();
+            var groupElement = group.getElement();
+            if (subGroups.length == 0) {
+                var rows = group.getRows().forEach(row => {
+                    rowsData.push(row.getData());
+                });
+                var parentGroup = inputGroup;
+                var key = group.getKey();
+                rowsData = d3.csvParseRows(Papa.unparse(rowsData));
+                exportCSVDefault(rowsData, inputGroup.join('_') + "_" + key);
+            } else {
+                groupElement.classList.add("shaker");
+                setTimeout(() => {
+                    groupElement.classList.remove("shaker");
+                }, 400);
+            }
         }
     }
 }
 
-//
 function setDataColumns(headersColumns) {
     var columns = [],
         name;
@@ -690,12 +726,13 @@ function setDataColumns(headersColumns) {
                 field: column,
                 frozen: true,
                 headerFilter: "input",
-                cellClick: function(e, cell) {
+                cellContext: function (e, cell) {
                     var rowData = Object.entries(cell.getRow().getData());
                     // console.log(["entête", "valeur"], rowData, "pvtTable");
-                    createTable(["entête", "valeur"], rowData, "pvtTable")
+                    createTable(["entête", "valeur"], rowData, "pvtTable");
+                    e.preventDefault();
                 },
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -706,24 +743,37 @@ function setDataColumns(headersColumns) {
                 title: name,
                 field: column,
                 frozen: true,
+                width: 150,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (column == headersColumns[2]) {
+        } else if (column == headersColumns[2] || column == headersColumns[8]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 visible: false,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
+        } else if (column == headersColumns[3] || column == headersColumns[4]) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                width: 150,
+                headerFilter: "input",
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
         } else if (i > 12 && i < 18) {
             columns.push({
                 id: i,
@@ -732,7 +782,7 @@ function setDataColumns(headersColumns) {
                 formatter: "numberfmt",
                 visible: false,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -744,7 +794,7 @@ function setDataColumns(headersColumns) {
                 field: column,
                 formatter: "numberfmt",
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -757,7 +807,7 @@ function setDataColumns(headersColumns) {
                 formatter: "numberfmt",
                 visible: false,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -769,7 +819,7 @@ function setDataColumns(headersColumns) {
                 field: column,
                 visible: false,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -780,7 +830,7 @@ function setDataColumns(headersColumns) {
                 title: name,
                 field: column,
                 headerFilter: "input",
-                headerContext: function(e, column) {
+                headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -799,14 +849,14 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
     if (diff > 1000) {
         setTimeout(() => {
             table.replaceData(data)
-                .then(function() {
+                .then(function () {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
                     console.log("replaceData " + (new Date() - timeProcess) + "ms");
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
                     document.getElementById('profil_info-div').classList.replace("inline", "hidden");
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     console.log(error);
                 });
         }, timer);
@@ -858,7 +908,10 @@ function commaToPoint(row) {
     var newRow = [];
     for (var j = 0, lgj = row.length; j < lgj; j++) {
         if (isNaN(Number(row[j])) && patternComma.test(row[j]) && !patternPoint.test(row[j])) {
-            row[j] = parseFloat(row[j].replace(/\,/, ".")).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            row[j] = parseFloat(row[j].replace(/\,/, ".")).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         } else if (row[j] === "0" || row[j] === " ") {
             row[j] = "";
         } else if (row[j] === "Not Attempted" || row[j] === "Not Available") {
@@ -891,26 +944,44 @@ function exportCSVDefault(data, filename) {
     var dataPointToCSV = Papa.unparse(data);
     var BOM = "\uFEFF";
     var csvDataPoint = BOM + dataPointToCSV;
-    var blob = new Blob([csvDataPoint], { type: "text/csv;charset=utf-8" });
+    var blob = new Blob([csvDataPoint], {
+        type: "text/csv;charset=utf-8"
+    });
     saveAs(blob, filename + ".csv");
 }
 
 /* SWEET ALERT and CREATE TABLE */
 
 function prettyDefault(title, text, html, icon, className) {
-    swal({ title: title, text: text, content: html, icon: icon, className: className }).then(value => {
+    swal({
+        title: title,
+        text: text,
+        content: html,
+        icon: icon,
+        className: className
+    }).then(value => {
         // console.log(value);
     });
 }
 
 function prettyDefaultReload(title, text, icon) {
-    swal({ title: title, text: text, icon: icon }).then(value => {
+    swal({
+        title: title,
+        text: text,
+        icon: icon
+    }).then(value => {
         setTimeout(() => window.location.href = window.location.href, 10);
     });
 }
 
 function prettyDefaultControl(title, text, html, icon) {
-    swal({ title: title, text: text, content: html, icon: icon, className: "sweetalert-lg" }).then(value => {
+    swal({
+        title: title,
+        text: text,
+        content: html,
+        icon: icon,
+        className: "sweetalert-lg"
+    }).then(value => {
         setTimeout(() => window.location.href = window.location.href, 10);
     });
 }
@@ -938,30 +1009,29 @@ function createTable(headers, data, className) {
 
     html.appendChild($.parseHTML(table)[0]);
     swal({
-        title: title,
-        text: text,
-        content: html,
-        className: "sweetalert-auto",
-        buttons: {
-            export: "export CSV",
-            annuler: true,
-        },
-    })
-    .then((value) => {
-        switch (value) {
-            case "export":
-                data.unshift(headers)
-                exportCSVDefault(data, "participant_info")
-                break;
+            title: title,
+            text: text,
+            content: html,
+            className: "sweetalert-auto",
+            buttons: {
+                export: "export CSV",
+                annuler: true,
+            },
+        })
+        .then((value) => {
+            switch (value) {
+                case "export":
+                    data.unshift(headers)
+                    exportCSVDefault(data, "participant_info")
+                    break;
 
-            default:
-                break;
-        }
-    });
+                default:
+                    break;
+            }
+        });
     // prettyDefault(title, text, html, "sweetalert-auto");
     return true;
 }
-
 function globalReport(jsonData) {
     var dataFromCSV = d3.csvParseRows(Papa.unparse(jsonData));
 
@@ -1024,11 +1094,9 @@ function globalReport(jsonData) {
             attestationPA;
 
         var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
-
         var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
 
         var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
-
         var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
 
         // validation attestation PC
@@ -1037,13 +1105,11 @@ function globalReport(jsonData) {
         // validation attestion PA
         (PA_oui && enrollment_oui) ? attestationPA = "OUI" : (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
 
-
         // Attestation PC
         row.splice(6, 0, attestationPC);
 
         // Attestation PA
         row.splice(7, 0, attestationPA);
-
 
         row.splice(8, 0, "");
 
@@ -1075,6 +1141,8 @@ function launchTab(jsonFromCSV, absences) {
 
     // set columns with formatters and others options
     var columns = setDataColumns(headers);
+
+    var headersHidden = columns.filter(column => column.visible != undefined && !column.visible).map(column => column.field);
 
     //create Tabulator on DOM element with id "table-app"
     var table = new Tabulator("#table-app", tableOptions(data, columns));
@@ -1154,6 +1222,16 @@ function launchTab(jsonFromCSV, absences) {
         setTimeout(() => {
             headers.forEach(header => {
                 table.showColumn(header);
+            });
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        }, 10)
+    }
+
+    document.getElementById('hideAll-coll').onclick = function() {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        setTimeout(() => {
+            headersHidden.forEach(header => {
+                table.hideColumn(header);
             });
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         }, 10)

@@ -342,7 +342,12 @@ function checkProfile(data) {
             title: "Fichier profile_info",
             text: "Un des champs en entête des 4 premières colonnes ne correspond pas au champs attendus dans l'ordre suivant:\n[id] [username] [name] [email]",
             icon: "warning"
-        }).then(value => {});
+        }).then(value => {
+            document.getElementById('profil_info-div').firstElementChild.classList.replace('normal', 'labelProfile');
+            $('.fa-arrow-alt-circle-right').addClass('blink');
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            document.getElementById('fileInputMappage').disabled = false;
+        });
     return flag;
 }
 

@@ -60,11 +60,9 @@ function globalReport(jsonData) {
             attestationPA;
 
         var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
-
         var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
 
         var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
-
         var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
 
         // validation attestation PC
@@ -73,13 +71,11 @@ function globalReport(jsonData) {
         // validation attestion PA
         (PA_oui && enrollment_oui) ? attestationPA = "OUI" : (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
 
-
         // Attestation PC
         row.splice(6, 0, attestationPC);
 
         // Attestation PA
         row.splice(7, 0, attestationPA);
-
 
         row.splice(8, 0, "");
 
@@ -111,6 +107,8 @@ function launchTab(jsonFromCSV, absences) {
 
     // set columns with formatters and others options
     var columns = setDataColumns(headers);
+
+    var headersHidden = columns.filter(column => column.visible != undefined && !column.visible).map(column => column.field);
 
     //create Tabulator on DOM element with id "table-app"
     var table = new Tabulator("#table-app", tableOptions(data, columns));
@@ -190,6 +188,16 @@ function launchTab(jsonFromCSV, absences) {
         setTimeout(() => {
             headers.forEach(header => {
                 table.showColumn(header);
+            });
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        }, 10)
+    }
+
+    document.getElementById('hideAll-coll').onclick = function() {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        setTimeout(() => {
+            headersHidden.forEach(header => {
+                table.hideColumn(header);
             });
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         }, 10)
