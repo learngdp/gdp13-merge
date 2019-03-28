@@ -1023,11 +1023,13 @@ function globalReport(jsonData) {
         var attestationPC,
             attestationPA;
 
-        var PC_oui = (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
-        var PA_oui = (cohortName != "" && grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
+            var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
 
-        var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
-        var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
+            var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
+    
+            var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
+    
+            var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
 
         // validation attestation PC
         (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
