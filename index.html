@@ -7,17 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         const lang = navigator.language;
-        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
+        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" ||
+            lang === "it" || lang === "nl") ? lang : "en";
+
         function iOSversion() {
-          if (/iP(hone|od|ad)/.test(navigator.platform)) {
-            var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-            return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
-          }
+            if (/iP(hone|od|ad)/.test(navigator.platform)) {
+                var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+                return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+            }
         }
         var ver = iOSversion();
         if (ver !== undefined && ver[0] <= 10) {
-            var message = (locale === 'fr') ? '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver + '</b></p>':
-            '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
+            var message = (locale === 'fr') ?
+                '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver +
+                '</b></p>' :
+                '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
             document.write(message);
         }
     </script>
@@ -27,42 +31,47 @@
     <div id="main_div" style="display:none">
         <div>
             <div>
-                <button id="deselectAll-rows" title="aucune sélection" style="margin-right:0.5em"><i class="fas fa-table"></i></button>
-                <button id="showAll-coll" title="afficher toutes les colonnes" style="margin-right:0.5em"><i class="far fa-eye"></i></button>
-                <button id="hideAll-coll" title="masquer les colonnes comme au démarrage" style="margin-right:0.5em"><i class="far fa-eye-slash"></i></button>
-                <button id="show-col" title="afficher la colonne" style="margin-left:2em"><i class="fas fa-eye"></i></button>
-                <button id="hide-col" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
-                <select name="filter-field" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
-                <select name="filter-type" id="filter-type" style="width: 50px" title="type d'opérateurs pour filtre"></select>
-                <input name="filter-value" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
-                <button id="filter-clear" title="effacer"><i class="fas fa-eraser"></i></button>
-                <input id="groupBy-input" type="text" style="width: 150px;margin-left: 2em" placeholder="clic droit sur entête.s" />
-                <button id="groupBy-btn" title="grouper par entête"><i class="fas fa-lock-open"></i></button>
-                <button id="degroupBy-btn" title="dégrouper"><i class="fas fa-undo-alt"></i></button>
-                <button id="exportCSV-btn" title="export csv" style="margin-left: 2em"><i class="fas fa-download"></i>
-                    CSV</button>
-                <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fas fa-cog fa-spin"></i></span>
+                <button id="deselectAll-rows" class="mainButton small" title="aucune sélection"><i class="fas fa-table"></i></button>
+                <button id="showAll-coll" class="mainButton small" title="afficher toutes les colonnes"><i class="far fa-eye"></i></button>
+                <button id="hideAll-coll" class="mainButton small" title="masquer les colonnes comme au démarrage"><i class="far fa-eye-slash"></i></button>
 
-                <div id="mainMenu-div" class="inline" style="float: right">
+                <button id="show-col" class="small" title="afficher la colonne" style="margin-left:1em"><i class="fas fa-eye"></i></button>
+                <button id="hide-col" class="small" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
+
+                <select name="filter-field" class="small" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
+                <select name="filter-type" class="small" id="filter-type" style="width: 60px" title="type d'opérateurs pour filtre"></select>
+                <input name="filter-value" class="small" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
+                <button id="filter-clear" class="small" title="effacer"><i class="fas fa-eraser"></i></button>
+                <input id="groupBy-input" class="small" type="text" style="width: 150px;margin-left: 2em" placeholder="clic droit sur entête.s" />
+                <button id="groupBy-btn" class="small" title="grouper par entête"><i class="fas fa-lock-open"></i></button>
+                <button id="degroupBy-btn" class="small" title="dégrouper" style="margin-right: 2em"><i class="fas fa-undo-alt"></i></button>
+
+                <select id="selectCohortes-btn" class="small" style="width:100px;"></select>
+                <button id="cohortes-btn" class="small"> 0 cohortes <i class="fas fa-download"></i></button>
+
+                <button id="finalStandard-btn" class="mainButton small" style="margin-left:2em"><i class="fas fa-download"></i> Final standard</button>
+                <button id="exportCSV-btn" class="mainButton small" title="export csv" style="margin-right: 2em">
+                    <i class="fas fa-download"></i> CSV <i class="far fa-eye"></i></button>
+
+                <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fas fa-spinner fa-spin"></i></span>
+                <div id="mainMenu-div" style="float: right">
                     <div id="grade_report-div" class="inline">
-                        <label for="fileInput">Grade report </label>
-                        <input id="fileInput" type="file" accept=".csv" multiple />
+                        <input id="fileInput" class="small" type="file" accept=".csv" multiple />
+                        <span style="margin-right: 0.5em">grade report</span><label type="button" for="fileInput" class="labelFileInput small">Choisir les fichiers...</label>
                     </div>
-                    <div id="profil_info-div" class="hidden">
-                        <label for="fileInputMappage" class="labelProfile">Profile info
-                            <i class="fas fa-arrow-alt-circle-right blink"></i>
-                        </label>
-                        <input id="fileInputMappage" type="file" accept=".csv" />
+                    <div id="profil_info-div" class="inline hidden">
+                        <input id="fileInputMappage" class="small" type="file" accept=".csv"/>
+                        <span class="labelProfile">Profile info <i class="far fa-arrow-alt-circle-right blink"></i> </span>
+                        <label type="button" for="fileInputMappage" class="labelFileInput small">Choisir le fichier...</label>
                     </div>
                 </div>
             </div>
+            <div style="height: 1em"></div>
+            <div>
+                <div id="table-app"></div>
+            </div>
         </div>
-        <div style="height: 1em"></div>
-        <div>
-            <div id="table-app"></div>
-        </div>
-    </div>
-    <pre id="output_pre" style="display:none"></pre>
-<script type="text/javascript" src="runtime.bundle.js"></script><script type="text/javascript" src="chunks/npm.lodash-549d4625eac0462c2cf4.js"></script><script type="text/javascript" src="chunks/npm.d3-selection-f3bf62dd7858b54b1d5e.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-chromatic-20006b328b6a837fcd9a.js"></script><script type="text/javascript" src="chunks/npm.d3-array-9578ee0083c2d15336af.js"></script><script type="text/javascript" src="chunks/npm.d3-transition-8c01da2375f5f6678649.js"></script><script type="text/javascript" src="chunks/npm.d3-interpolate-b7559a0423ccaa3f86be.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-c4d14863ce38c146c94e.js"></script><script type="text/javascript" src="chunks/npm.d3-time-85d1a5b272d689c8311b.js"></script><script type="text/javascript" src="chunks/npm.d3-format-fe56330a4472a65c0616.js"></script><script type="text/javascript" src="chunks/npm.d3-ease-51a95975e1e7b786e48a.js"></script><script type="text/javascript" src="chunks/npm.jquery-ui-d94085b8fc7cebe8ec66.js"></script><script type="text/javascript" src="chunks/npm.d3-collection-3ade68e2d441892ac074.js"></script><script type="text/javascript" src="chunks/npm.d3-color-a3634903d73ce0633a1b.js"></script><script type="text/javascript" src="chunks/npm.d3-dsv-445d544d9db69ed4ca5a.js"></script><script type="text/javascript" src="chunks/npm.d3-time-format-56b8182036bed0392d9c.js"></script><script type="text/javascript" src="chunks/npm.d3-timer-92b7986066ddd27b5d9e.js"></script><script type="text/javascript" src="chunks/npm.fortawesome-0a93a1fb127444e4eafe.js"></script><script type="text/javascript" src="chunks/npm.tabulator-tables-12af7d80e56d0ce693fd.js"></script><script type="text/javascript" src="chunks/npm.normalize.css-d7d0982eaec8e02ecae1.js"></script><script type="text/javascript" src="chunks/npm.css-loader-5ff31fa0ceda715014e1.js"></script><script type="text/javascript" src="chunks/npm.d3-dispatch-d86c04910b8926bcd502.js"></script><script type="text/javascript" src="chunks/npm.style-loader-45fdbc18ceecde6a5006.js"></script><script type="text/javascript" src="chunks/npm.webpack-6ca5d9c403c74a5fc3ad.js"></script><script type="text/javascript" src="chunks/npm.file-saver-fb732c7e9f3be1b9771b.js"></script><script type="text/javascript" src="chunks/npm.jquery-94c9f9edd090c1e49198.js"></script><script type="text/javascript" src="chunks/npm.papaparse-be34b8b620ec784c6f8f.js"></script><script type="text/javascript" src="chunks/npm.process-38f0dec0f2062ef4361f.js"></script><script type="text/javascript" src="chunks/npm.setimmediate-9e8dd49b22619d4cac57.js"></script><script type="text/javascript" src="chunks/npm.sweetalert-5e229b1a6bd47bcc1d3a.js"></script><script type="text/javascript" src="chunks/npm.timers-browserify-a7c06791c9b950c6ec79.js"></script><script type="text/javascript" src="chunks/npm.webpack-jquery-ui-55094d6497b3f633c18f.js"></script><script type="text/javascript" src="chunks/app-a0359ab58a926e2b88aa.js"></script></body>
+        <pre id="output_pre" style="display:none"></pre>
+<script type="text/javascript" src="runtime.bundle.js"></script><script type="text/javascript" src="chunks/npm.lodash-97bd7497e7f13581d3e7.js"></script><script type="text/javascript" src="chunks/npm.d3-selection-f3bf62dd7858b54b1d5e.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-chromatic-c2c5bebb84706122cae7.js"></script><script type="text/javascript" src="chunks/npm.d3-array-9578ee0083c2d15336af.js"></script><script type="text/javascript" src="chunks/npm.d3-transition-7cfa01aa666c270ecef6.js"></script><script type="text/javascript" src="chunks/npm.d3-interpolate-b7559a0423ccaa3f86be.js"></script><script type="text/javascript" src="chunks/npm.d3-scale-946a1391b46684b0f31e.js"></script><script type="text/javascript" src="chunks/npm.d3-time-85d1a5b272d689c8311b.js"></script><script type="text/javascript" src="chunks/npm.d3-format-fe56330a4472a65c0616.js"></script><script type="text/javascript" src="chunks/npm.d3-ease-51a95975e1e7b786e48a.js"></script><script type="text/javascript" src="chunks/npm.jquery-ui-3fc6e6ace8e78bffc052.js"></script><script type="text/javascript" src="chunks/npm.d3-collection-3ade68e2d441892ac074.js"></script><script type="text/javascript" src="chunks/npm.d3-color-a3634903d73ce0633a1b.js"></script><script type="text/javascript" src="chunks/npm.d3-dsv-4db1f053f66f62bdcbb1.js"></script><script type="text/javascript" src="chunks/npm.d3-time-format-56b8182036bed0392d9c.js"></script><script type="text/javascript" src="chunks/npm.d3-timer-92b7986066ddd27b5d9e.js"></script><script type="text/javascript" src="chunks/npm.fortawesome-70bc58f3047b9b5f714f.js"></script><script type="text/javascript" src="chunks/npm.tabulator-tables-e150fb9d6a19127bdbba.js"></script><script type="text/javascript" src="chunks/npm.normalize.css-a8a850a689e561d39022.js"></script><script type="text/javascript" src="chunks/npm.css-loader-86ff1b9edf2c68cfa00e.js"></script><script type="text/javascript" src="chunks/npm.d3-dispatch-d86c04910b8926bcd502.js"></script><script type="text/javascript" src="chunks/npm.style-loader-dae9f64ebc799d1bd2e7.js"></script><script type="text/javascript" src="chunks/npm.webpack-7e5fa1e14fb01a351b0b.js"></script><script type="text/javascript" src="chunks/npm.picnic-efedc1be9d743a9f829a.js"></script><script type="text/javascript" src="chunks/npm.file-saver-8d5c274f4ac088aace3a.js"></script><script type="text/javascript" src="chunks/npm.jquery-94c9f9edd090c1e49198.js"></script><script type="text/javascript" src="chunks/npm.papaparse-f76d6acf7b8dd4793e27.js"></script><script type="text/javascript" src="chunks/npm.process-e8955e138ea2cca036d3.js"></script><script type="text/javascript" src="chunks/npm.setimmediate-7e235d70aaca1db02e0c.js"></script><script type="text/javascript" src="chunks/npm.sweetalert-43fe937f9a73fb332cfe.js"></script><script type="text/javascript" src="chunks/npm.timers-browserify-f3509fc30bb24905f08a.js"></script><script type="text/javascript" src="chunks/npm.webpack-jquery-ui-56f79b2bb74ac4c26413.js"></script><script type="text/javascript" src="chunks/app-11781be43248b26d1e88.js"></script></body>
 
 </html>
