@@ -636,16 +636,20 @@ Tabulator.prototype.extendModule("format", "formatters", {
 
 // options for table
 function tableOptions(data, columns) {
-    var footerContent = '<div class="footerInfo">lignes: <span id="rowsTotal" style="font-weight: 900">' + data.length + '</span>';
+    var footerContent = '<div class="footerInfo"> ';
+    footerContent += '<a type="button" href="https://github.com/olifolkerd/tabulator" target="_blank" style="margin-right: 3em; padding: 2px 5px; font-weight: 900">Tabulator</a>'
+    footerContent += 'lignes: <span id="rowsTotal" style="font-weight: 900">' + data.length + '</span>';
     footerContent += '<span style="margin-left: 1em">colonnes: </span><span id="columnsTotal" style="font-weight: 900">' + columns.length + '</span>';
-    footerContent += '<div style="margin-left: 10em;" class="inline">';
+    footerContent += '<div style="margin-left: 4em;" class="inline">';
     footerContent += '<span>lignes: </span><span id="rowsCount" style="font-weight: 900"></span> (filtrée.s)';
     footerContent += '<span style="margin-left: 2em">sélection: </span><span id="rowSelected" style="font-weight: 900"></span> (ligne.s)';
-    footerContent += '<span style="margin-left: 2em">total absence.s: </span><span id="absences" style="font-weight: 900; color:red"></span>'
+    footerContent += '<span style="margin-left: 2em">total absence.s: </span><span id="absences" style="font-weight: 900; color:red"></span>';
+    footerContent += '</div><div style="margin-left: 4em;" class="inline">';
+    footerContent += '<span style="margin-left: 2em">groupe.s: </span><span id="groupsNumber" style="font-weight: 900"></span>'
     footerContent += '</div></div>';
     return {
         selectable: true,
-        height: 800,
+        height: Math.round(window.innerHeight)-50,
         data: data,
         reactiveData: true,
         tooltipsHeader: true,
@@ -653,7 +657,7 @@ function tableOptions(data, columns) {
         pagination: "local",
         paginationSize: 50,
         movableColumns: true,
-        headerFilterPlaceholder: "filtre par mot-clé...",
+        headerFilterPlaceholder: "...",
         footerElement: footerContent,
         history: true,
         tooltips: true,
