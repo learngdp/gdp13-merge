@@ -300,6 +300,10 @@ function commaToPoint(row) {
     return newRow;
 }
 
+function pointToComma_FR(d) {
+    return (isNaN(parseFloat(d))) ? d : parseFloat(d).toLocaleString("fr-FR");
+}
+
 function filter_array(test_array) {
     var index = -1,
         arr_length = test_array ? test_array.length : 0,
@@ -406,5 +410,61 @@ function createTable(headers, data, className) {
             }
         });
     // prettyDefault(title, text, html, "sweetalert-auto");
+    return true;
+}
+
+// création simple de table html pour sweetALert pvtTable
+function createTableExtra(data, headers, className, extraTitle) {
+    // console.log(data, headers);
+    var html = document.createElement("div"),
+    p = document.createElement("p"),
+    title = extraTitle,
+    text,
+    dataExport;
+
+    var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
+    table += '<thead><tr>';
+    headers.forEach(header => {
+        // console.log(header);
+        table += '<th>' + header + '</th>';
+    });
+    table += '</tr></thead>';
+    table += '<tbody>';
+    data.forEach(row => {
+        // console.log(row.length);
+        table += '<tr>';
+        row.forEach(cell => {
+            table += '<td>' + cell + '</td>';
+        })
+        table += '</tr>';
+    });
+    table += '</tbody></table>';
+    // console.log($.parseHTML(extraTable)[0])
+    html.appendChild($.parseHTML(table)[0]);
+
+    swal({
+            title: title,
+            text: text,
+            content: html,
+            className: "sweetalert-auto",
+            buttons: {
+                export: "export CSV",
+                annuler: true,
+            },
+        })
+        .then((value) => {
+            switch (value) {
+                case "export":
+                    dataExport = data.map(row => row.map(d => pointToComma_FR(d)));
+                    dataExport.unshift(headers)
+                    exportCSVDefault(dataExport, title)
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
+    // prettyDefault(title, text, html, "", "sweetalert-auto");
     return true;
 }

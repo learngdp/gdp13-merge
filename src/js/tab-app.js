@@ -1,13 +1,27 @@
-function globalReport(jsonData) {
+function globalReport(jsonData, dataMappage) {
     var dataFromCSV = d3.csvParseRows(Papa.unparse(jsonData));
 
     var data = dataFromCSV.map(row => commaToPoint(row));
 
+    // *** COHORTES
+    var select = $('#selectCohortes-btn');
+    // suppression des options existantes
+    select.find('option').remove();
+    // implémentation liste options complète
+    for (var i = 0, lgi = cohortesOptions.length; i < lgi; i++) {
+        select.append('<option value="' + cohortesOptions[i] + '">' + cohortesOptions[i] + '</option>')
+    }
+    var cohortes = [...new Set(data.map(el => el[5]))];
+    var cohortTitle = cohortes[0];
+
+    cohortes = cohortes.slice(1, cohortes.length);
+
+    var buttonCohortes = document.getElementById('cohortes-btn');
+    buttonCohortes.innerHTML = cohortes.length + ' cohortes <i class="fas fa-download"></i>';
+    // ***
+
     var headersSpe = [data[0].slice(17, 32)];
     var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
-
-
-
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
     data[0].splice(8, 0, 'Certificat Auth');
@@ -86,6 +100,23 @@ function globalReport(jsonData) {
     setTimeout(() => {
         launchTab(d3.csvParse(Papa.unparse(data)), absences); // dataToTable(data, cohortes, cohortTitle);
     }, 100);
+
+    document.getElementById('finalStandard-btn').onclick = function(e) {
+        // console.log(e);
+        tableauFinalStandard(dataFromCSV, dataMappage);
+    }
+
+    // *** EXTRA COHORTES
+    buttonCohortes.onclick = function(e) {
+        var selected = document.getElementById('selectCohortes-btn').value;
+        var cohortesHtml = getDetailsCohortes(d3.csvParse(Papa.unparse(data)), selected, cohortTitle);
+        console.log(cohortesHtml);
+        setTimeout(() => {
+            getExtraData("cohortes (détails)", cohortesHtml, this, selected);
+        }, 100);
+    }
+
+    // ***
 
     console.log("globalReport end " + (new Date() - timeProcess) + "ms");
     return true;

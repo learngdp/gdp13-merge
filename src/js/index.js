@@ -42,11 +42,7 @@ fileInput.onchange = function (e) {
         })
         .catch(function (error) {
             console.log(error);
-            swal({
-                title: "Information error",
-                text: "Oops! " + error,
-                icon: "warning"
-            });
+            prettyDefaultReload("Information erreur", "Oups! " + error, "warning");
         });
     console.log("timeProcess: " + (new Date() - timeProcess) + "ms");
 }
@@ -164,9 +160,8 @@ function flatData(dataFiles, uniqueHeaders) {
 
         document.getElementById('fileInputMappage').onchange = function (e) {
             this.disabled = true;
-            document.getElementById('profil_info-div').firstElementChild.classList.replace('labelProfile', 'normal');
-            $('.fa-arrow-alt-circle-right').removeClass('blink');
             document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+            document.getElementById('profil_info-div').classList.replace("inline", "hidden");
             var file = this.files[0];
             var reader = new FileReader();
             reader.onprogress = function (event) {}
@@ -214,7 +209,7 @@ function tableForFiles(dataFiles, uniqueHeaders) {
 
             var flag = false;
             setTimeout(() => {
-                flag = globalReport(jsonData); // launchTab(d3.csvParse(Papa.unparse(jsonData)));
+                flag = globalReport(jsonData, dataMappage); // launchTab(d3.csvParse(Papa.unparse(jsonData)));
                 if (flag) {
                     console.log("tabulator launch !" + (new Date() - timeProcess) + "ms");
                 }
@@ -295,7 +290,7 @@ function dataByColumn(arr, col) {
         column.push(value);
     }
     return filter_array(column); // voir avec _.compact
-}
+} 
 
 // classe en fonction dans modèles ici headersTemplate
 function sortObjectKeys(obj, keys) {

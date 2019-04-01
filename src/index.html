@@ -7,17 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
         const lang = navigator.language;
-        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
+        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" ||
+            lang === "it" || lang === "nl") ? lang : "en";
+
         function iOSversion() {
-          if (/iP(hone|od|ad)/.test(navigator.platform)) {
-            var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-            return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
-          }
+            if (/iP(hone|od|ad)/.test(navigator.platform)) {
+                var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+                return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+            }
         }
         var ver = iOSversion();
         if (ver !== undefined && ver[0] <= 10) {
-            var message = (locale === 'fr') ? '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver + '</b></p>':
-            '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
+            var message = (locale === 'fr') ?
+                '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver +
+                '</b></p>' :
+                '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
             document.write(message);
         }
     </script>
@@ -27,42 +31,47 @@
     <div id="main_div" style="display:none">
         <div>
             <div>
-                <button id="deselectAll-rows" title="aucune sélection" style="margin-right:0.5em"><i class="fas fa-table"></i></button>
-                <button id="showAll-coll" title="afficher toutes les colonnes" style="margin-right:0.5em"><i class="far fa-eye"></i></button>
-                <button id="hideAll-coll" title="masquer les colonnes comme au démarrage" style="margin-right:0.5em"><i class="far fa-eye-slash"></i></button>
-                <button id="show-col" title="afficher la colonne" style="margin-left:2em"><i class="fas fa-eye"></i></button>
-                <button id="hide-col" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
-                <select name="filter-field" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
-                <select name="filter-type" id="filter-type" style="width: 50px" title="type d'opérateurs pour filtre"></select>
-                <input name="filter-value" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
-                <button id="filter-clear" title="effacer"><i class="fas fa-eraser"></i></button>
-                <input id="groupBy-input" type="text" style="width: 150px;margin-left: 2em" placeholder="clic droit sur entête.s" />
-                <button id="groupBy-btn" title="grouper par entête"><i class="fas fa-lock-open"></i></button>
-                <button id="degroupBy-btn" title="dégrouper"><i class="fas fa-undo-alt"></i></button>
-                <button id="exportCSV-btn" title="export csv" style="margin-left: 2em"><i class="fas fa-download"></i>
-                    CSV</button>
-                <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fas fa-cog fa-spin"></i></span>
+                <button id="deselectAll-rows" class="mainButton small" title="aucune sélection"><i class="fas fa-table"></i></button>
+                <button id="showAll-coll" class="mainButton small" title="afficher toutes les colonnes"><i class="far fa-eye"></i></button>
+                <button id="hideAll-coll" class="mainButton small" title="masquer les colonnes comme au démarrage"><i class="far fa-eye-slash"></i></button>
 
-                <div id="mainMenu-div" class="inline" style="float: right">
+                <button id="show-col" class="small" title="afficher la colonne" style="margin-left:1em"><i class="fas fa-eye"></i></button>
+                <button id="hide-col" class="small" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
+
+                <select name="filter-field" class="small" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
+                <select name="filter-type" class="small" id="filter-type" style="width: 60px" title="type d'opérateurs pour filtre"></select>
+                <input name="filter-value" class="small" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
+                <button id="filter-clear" class="small" title="effacer"><i class="fas fa-eraser"></i></button>
+                <input id="groupBy-input" class="small" type="text" style="width: 150px;margin-left: 2em" placeholder="clic droit sur entête.s" />
+                <button id="groupBy-btn" class="small" title="grouper par entête"><i class="fas fa-lock-open"></i></button>
+                <button id="degroupBy-btn" class="small" title="dégrouper" style="margin-right: 2em"><i class="fas fa-undo-alt"></i></button>
+
+                <select id="selectCohortes-btn" class="small" style="width:100px;"></select>
+                <button id="cohortes-btn" class="small"> 0 cohortes <i class="fas fa-download"></i></button>
+
+                <button id="finalStandard-btn" class="mainButton small" style="margin-left:2em"><i class="fas fa-download"></i> Final standard</button>
+                <button id="exportCSV-btn" class="mainButton small" title="export csv" style="margin-right: 2em">
+                    <i class="fas fa-download"></i> CSV <i class="far fa-eye"></i></button>
+
+                <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fas fa-spinner fa-spin"></i></span>
+                <div id="mainMenu-div" style="float: right">
                     <div id="grade_report-div" class="inline">
-                        <label for="fileInput">Grade report </label>
-                        <input id="fileInput" type="file" accept=".csv" multiple />
+                        <input id="fileInput" class="small" type="file" accept=".csv" multiple />
+                        <span style="margin-right: 0.5em">grade report</span><label type="button" for="fileInput" class="labelFileInput small">Choisir les fichiers...</label>
                     </div>
-                    <div id="profil_info-div" class="hidden">
-                        <label for="fileInputMappage" class="labelProfile">Profile info
-                            <i class="fas fa-arrow-alt-circle-right blink"></i>
-                        </label>
-                        <input id="fileInputMappage" type="file" accept=".csv" />
+                    <div id="profil_info-div" class="inline hidden">
+                        <input id="fileInputMappage" class="small" type="file" accept=".csv"/>
+                        <span class="labelProfile">Profile info <i class="far fa-arrow-alt-circle-right blink"></i> </span>
+                        <label type="button" for="fileInputMappage" class="labelFileInput small">Choisir le fichier...</label>
                     </div>
                 </div>
             </div>
+            <div style="height: 1em"></div>
+            <div>
+                <div id="table-app"></div>
+            </div>
         </div>
-        <div style="height: 1em"></div>
-        <div>
-            <div id="table-app"></div>
-        </div>
-    </div>
-    <pre id="output_pre" style="display:none"></pre>
+        <pre id="output_pre" style="display:none"></pre>
 </body>
 
 </html>
