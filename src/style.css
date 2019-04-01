@@ -166,6 +166,7 @@ table.pvtTable {
 
 table.pvtTable thead tr th {
   background-color: #F0F5FE;
+  color: #555;
   border: 1px solid #CDCDCD;
   padding: 2px;
 }
@@ -176,6 +177,7 @@ table.pvtTable thead tr th:first-child {
 
 table.pvtTable tbody tr th {
   background-color: #F0F5FE;
+  color: #555;
   border: 1px solid #CDCDCD;
   padding: 2px;
   text-align: left;

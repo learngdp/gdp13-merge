@@ -239,14 +239,15 @@ function launchTab(jsonFromCSV, absences) {
     });
 
     document.getElementById('exportCSV-btn').onclick = function (e) {
-        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        console.time("export");
-        setTimeout(() => {
-            // console.log(merged);
-            exportCSVDefault(dataFiltered(), "global_report");
-            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-            console.timeEnd("export");
-        }, 100);
+        table.download("csv", "export-grades.csv", {delimiter:","});
+        // document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        // console.time("export");
+        // setTimeout(() => {
+        //     // console.log(merged);
+        //     exportCSVDefault(dataFiltered(), "global_report");
+        //     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        //     console.timeEnd("export");
+        // }, 100);
     }
 
     var dataFiltered = function () {

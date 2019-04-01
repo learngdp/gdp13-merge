@@ -82,6 +82,7 @@ function number_test(n) {
 }
 
 function tableauFinalStandard(data, dataMappage) {
+    document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
         "Student ID", // 0
@@ -284,5 +285,8 @@ function tableauFinalStandard(data, dataMappage) {
     var dataExport = data; //.map(row => row.map(d => pointToComma_FR(d)));
     dataExport.unshift(headersStandard);
 
-    exportCSVDefault(dataExport, "final-standard");
+    setTimeout(() => {
+        exportCSVDefault(dataExport, "final-standard");
+        document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+    }, 100);
 }
