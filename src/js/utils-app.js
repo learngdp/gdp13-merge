@@ -130,7 +130,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (column == headersColumns[2] || column == headersColumns[8]) {
+        } else if (column == headersColumns[2]) {
             columns.push({
                 id: i,
                 title: name,
@@ -167,7 +167,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i == 9 || i == 18) {
+        } else if (i == 9 || i == 18 || i === 8) {
             columns.push({
                 id: i,
                 title: name,

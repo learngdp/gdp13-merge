@@ -136,21 +136,21 @@ const headersByCategories = {
 
 const fileNamesTemplate = {
     "-TC_": 1,
-    "-SPE-DFS_": 2,
-    "-SPE-MCB_": 3,
-    "-SPE-MEP_": 4,
-    "-SPE-IEF_": 5,
-    "-SPE-PMI_": 6,
-    "-SPE-AF_": 7,
-    "-SPE-AS_": 8,
-    "-SPE-EIP_": 9,
-    "-SPE-PAV_": 10,
-    "-SPE-MVP_": 11,
-    "-SPE-GPAS_": 12,
-    "-SPE-MRP_": 13,
-    "-SPE-TRIZ_": 14,
-    "-SPE-G2C_": 15,
-    "-SPE-PAE_": 16,
+    "_SPE-DFS_": 2,
+    "_SPE-MCB_": 3,
+    "_SPE-MEP_": 4,
+    "_SPE-IEF_": 5,
+    "_SPE-PMI_": 6,
+    "_SPE-AF_": 7,
+    "_SPE-AS_": 8,
+    "_SPE-EIP_": 9,
+    "_SPE-PAV_": 10,
+    "_SPE-MVP_": 11,
+    "_SPE-GPAS_": 12,
+    "_SPE-MRP_": 13,
+    "_SPE-TRIZ_": 14,
+    "_SPE-G2C_": 15,
+    "_SPE-PAE_": 16,
     "-PA_": 17,
 };
 
@@ -179,7 +179,7 @@ const regexSPE = /SPE-\w{2,4}_/;
 
 const regexAllSPE = /(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
 
-const regexFileNamesTemplate = /\-(SPE-\w{2,4}|PA|TC)_/;
+const regexFileNamesTemplate = /(_SPE-\w{2,4}|\-PA|\-TC)_/;
 
 // pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;

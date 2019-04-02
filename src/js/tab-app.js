@@ -24,7 +24,7 @@ function globalReport(jsonData, dataMappage) {
     var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
-    data[0].splice(8, 0, 'Certificat Auth');
+    data[0].splice(8, 0, 'Grade TC');
     data[0].splice(10, 0, '1ère SPE');
     data[0].splice(11, 0, '2ème SPE');
     data[0].splice(12, 0, 'SPE validées');
@@ -91,7 +91,7 @@ function globalReport(jsonData, dataMappage) {
         // Attestation PA
         row.splice(7, 0, attestationPA);
 
-        row.splice(8, 0, "");
+        row.splice(8, 0, grades[0]);
 
         row.splice(10, 0, cellHeader1);
         row.splice(11, 0, cellHeader2);

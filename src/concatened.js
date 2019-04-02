@@ -566,21 +566,21 @@ const headersByCategories = {
 
 const fileNamesTemplate = {
     "-TC_": 1,
-    "-SPE-DFS_": 2,
-    "-SPE-MCB_": 3,
-    "-SPE-MEP_": 4,
-    "-SPE-IEF_": 5,
-    "-SPE-PMI_": 6,
-    "-SPE-AF_": 7,
-    "-SPE-AS_": 8,
-    "-SPE-EIP_": 9,
-    "-SPE-PAV_": 10,
-    "-SPE-MVP_": 11,
-    "-SPE-GPAS_": 12,
-    "-SPE-MRP_": 13,
-    "-SPE-TRIZ_": 14,
-    "-SPE-G2C_": 15,
-    "-SPE-PAE_": 16,
+    "_SPE-DFS_": 2,
+    "_SPE-MCB_": 3,
+    "_SPE-MEP_": 4,
+    "_SPE-IEF_": 5,
+    "_SPE-PMI_": 6,
+    "_SPE-AF_": 7,
+    "_SPE-AS_": 8,
+    "_SPE-EIP_": 9,
+    "_SPE-PAV_": 10,
+    "_SPE-MVP_": 11,
+    "_SPE-GPAS_": 12,
+    "_SPE-MRP_": 13,
+    "_SPE-TRIZ_": 14,
+    "_SPE-G2C_": 15,
+    "_SPE-PAE_": 16,
     "-PA_": 17,
 };
 
@@ -609,7 +609,7 @@ const regexSPE = /SPE-\w{2,4}_/;
 
 const regexAllSPE = /(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
 
-const regexFileNamesTemplate = /\-(SPE-\w{2,4}|PA|TC)_/;
+const regexFileNamesTemplate = /(_SPE-\w{2,4}|\-PA|\-TC)_/;
 
 // pattern for short name column
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
@@ -749,7 +749,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (column == headersColumns[2] || column == headersColumns[8]) {
+        } else if (column == headersColumns[2]) {
             columns.push({
                 id: i,
                 title: name,
@@ -786,7 +786,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i == 9 || i == 18) {
+        } else if (i == 9 || i == 18 || i === 8) {
             columns.push({
                 id: i,
                 title: name,
@@ -1117,7 +1117,7 @@ function globalReport(jsonData, dataMappage) {
     var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
-    data[0].splice(8, 0, 'Certificat Auth');
+    data[0].splice(8, 0, 'Grade TC');
     data[0].splice(10, 0, '1ère SPE');
     data[0].splice(11, 0, '2ème SPE');
     data[0].splice(12, 0, 'SPE validées');
@@ -1184,7 +1184,7 @@ function globalReport(jsonData, dataMappage) {
         // Attestation PA
         row.splice(7, 0, attestationPA);
 
-        row.splice(8, 0, "");
+        row.splice(8, 0, grades[0]);
 
         row.splice(10, 0, cellHeader1);
         row.splice(11, 0, cellHeader2);
