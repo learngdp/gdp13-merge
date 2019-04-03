@@ -9,7 +9,8 @@ const result = concat(
             './src/js/commons.js',
             './src/js/utils-app.js',
             './src/js/tab-app.js',
-            './src/js/extra.js'
+            './src/js/extra.js',
+            './src/js/guide.js'
         ],
         './src/concatened.js')
     .then(result => merge(common, {

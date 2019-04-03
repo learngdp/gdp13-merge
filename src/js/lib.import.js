@@ -8,11 +8,17 @@ document.addEventListener('touchstart', function addtouchclass(e) { // first tim
 }, false)
 
 /********************************* */
+
+// import 'webpack-jquery-ui/css';
 import 'normalize.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import './style.css';
+import 'intro.js/introjs.css';
 
-import 'webpack-jquery-ui/css';
+import $ from 'jquery';
+
+// import * as introJs from 'intro.js';
+// console.log(introJs);
 
 var Tabulator = require('tabulator-tables');
 

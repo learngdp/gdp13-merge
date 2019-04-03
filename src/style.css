@@ -4,6 +4,15 @@ body {
   padding: 5px;
 }
 
+.introjs-helperNumberLayer {
+  top: 30px !important;
+  left: 50px !important;
+}
+
+.introjs-tooltip  {
+  min-width: 300px !important;
+}
+
 .footerInfo {
   float: left;
   color: #555;

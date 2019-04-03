@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const DashboardPlugin = require('webpack-dashboard/plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const webpack = require('webpack');
 // const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
@@ -20,7 +21,9 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery'",
-            "window.$": "jquery"
+            "window.$": "jquery",
+            // // other modules
+            // introJs: ['intro.js', 'introJs']
         }),
         new DashboardPlugin()
     ],

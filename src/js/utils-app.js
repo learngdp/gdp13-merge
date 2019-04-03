@@ -229,21 +229,21 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
     if (diff > 1000) {
         setTimeout(() => {
             table.replaceData(data)
-                .then(function () {
+                .then(function() {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
                     console.log("replaceData " + (new Date() - timeProcess) + "ms");
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-                    document.getElementById('profil_info-div').classList.replace("inline", "hidden");
+                    document.getElementById('guide-btn').classList.remove('hidden');
                 })
-                .catch(function (error) {
+                .catch(function(error) {
                     console.log(error);
                 });
         }, timer);
     } else {
         console.log("replaceData " + (new Date() - timeProcess) + "ms");
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-        document.getElementById('profil_info-div').classList.replace("inline", "hidden");
+        document.getElementById('guide-btn').classList.remove('hidden');
     }
 }
 

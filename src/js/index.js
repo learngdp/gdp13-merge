@@ -140,9 +140,9 @@ function flatData(dataFiles, uniqueHeaders) {
 
         // console.log(dataMerged);
 
-        var getDataMappage = function (result) {
+        var getDataMappage = function(result) {
             var delimiter = Papa.parse(result).meta.delimiter;
-            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function (d) {
+            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function(d) {
                 // ( d["Student ID"] != undefined && /^(\r\n|\r|\n)$/.test(d["Student ID"].toString()) )
                 // console.log(d[0], /^(\r\n|\r|\n)$/.test(d[0]));
                 if (d && d !== undefined && d[0].length !== 0) return d;
@@ -150,23 +150,23 @@ function flatData(dataFiles, uniqueHeaders) {
             var dataMappage = d3.csvParse(Papa.unparse(dataResult));
             // console.log(data.flat, dataMappage);
             if (dataResult !== undefined && checkProfile(dataResult)) {
-                resolve({
-                    flat: dataMerged,
-                    dataMappage: dataMappage
-                });
+                resolve({ flat: dataMerged , dataMappage: dataMappage });
                 // setTimeout(() => launchDataMappage(data.flat, dataMappage), 500);
             }
         }
 
-        document.getElementById('fileInputMappage').onchange = function (e) {
+        document.getElementById('fileInputMappage').onchange = function(e) {
             this.disabled = true;
+            // console.log(document.getElementById('profil_info-div').childNodes);
+            // document.getElementById('profil_info-div').childNodes[3].classList.replace('labelProfile', 'normal');
+            // $('.fa-arrow-alt-circle-right').removeClass('blink');
             document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             document.getElementById('profil_info-div').classList.replace("inline", "hidden");
             var file = this.files[0];
             var reader = new FileReader();
-            reader.onprogress = function (event) {}
-            reader.onloadend = function (event) {}
-            reader.onload = function (event) {
+            reader.onprogress = function(event) {}
+            reader.onloadend = function(event) {}
+            reader.onload = function(event) {
                 getDataMappage(reader.result);
             }
             reader.readAsText(file);
