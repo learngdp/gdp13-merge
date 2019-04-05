@@ -1,7 +1,6 @@
 const format2dec = d3.format(".2f");
 const formatPercent = d3.format(".0%");
 
-/* tabulator */
 // créer un nouveau format pour les colonnes
 Tabulator.prototype.extendModule("format", "formatters", {
     numberfmt: function (cell, formatterParams) {
@@ -13,6 +12,10 @@ Tabulator.prototype.extendModule("format", "formatters", {
         }
         return cellFormatted;
     },
+    checkfiles: function (cell, formatterParams) {
+        var cellValue = cell.getValue();
+        return cellValue;
+    }
 });
 
 // options for table
@@ -28,17 +31,17 @@ function tableOptions(data, columns) {
     footerContent += '</div><div style="margin-left: 4em;" class="inline">';
     footerContent += '<span style="margin-left: 2em">groupe.s: </span><span id="groupsNumber" style="font-weight: 900"></span>'
     footerContent += '</div></div>';
+
     return {
         selectable: true,
-        height: Math.round(window.innerHeight)-50,
+        height: Math.round(window.innerHeight) - 50,
         data: data,
         reactiveData: true,
         tooltipsHeader: true,
         columns: columns,
         pagination: "local",
-        paginationSize: 50,
+        paginationSize: 100,
         movableColumns: true,
-        headerFilterPlaceholder: "...",
         footerElement: footerContent,
         history: true,
         tooltips: true,
@@ -60,7 +63,7 @@ function tableOptions(data, columns) {
             var groupByHeader = document.getElementById('groupBy-input').value;
             var groupTitle;
             var subGroups = group.getSubGroups();
-            if (subGroups.length == 0) {
+            if (subGroups.length === 0) {
                 groupTitle = "<span style='color:#0000FFFF; margin-right: 5px;' title='clic droit pour export'>" + groupByHeader + "</span> : " + value +
                     "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
             } else {
@@ -76,7 +79,7 @@ function tableOptions(data, columns) {
             var rowsData = [];
             var subGroups = group.getSubGroups();
             var groupElement = group.getElement();
-            if (subGroups.length == 0) {
+            if (subGroups.length === 0) {
                 var rows = group.getRows().forEach(row => {
                     rowsData.push(row.getData());
                 });
@@ -94,21 +97,33 @@ function tableOptions(data, columns) {
     }
 }
 
+// *** à revoir
+function getGroup(group) {
+    var groups = [];
+    while (group.getSubGroups()) {
+        group.getSubGroups().forEach(subGroup => {
+            console.log(subGroup)
+            groups.push(subGroup);
+        });
+    };
+    return groups;
+}
+
 function setDataColumns(headersColumns) {
     var columns = [],
         name;
     headersColumns.forEach((column, i) => {
         name = columnName(column);
-        if (column == headersColumns[0]) {
+        if (column === headersColumns[0]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 frozen: true,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 cellContext: function (e, cell) {
                     var rowData = Object.entries(cell.getRow().getData());
-                    // console.log(["entête", "valeur"], rowData, "pvtTable");
                     createTable(["entête", "valeur"], rowData, "pvtTable");
                     e.preventDefault();
                 },
@@ -117,7 +132,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (column == headersColumns[1]) {
+        } else if (column === headersColumns[1]) {
             columns.push({
                 id: i,
                 title: name,
@@ -125,55 +140,103 @@ function setDataColumns(headersColumns) {
                 frozen: true,
                 width: 150,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
-            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (column == headersColumns[2]) {
+            });
+        } else if (column === headersColumns[2]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 visible: false,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (column == headersColumns[3] || column == headersColumns[4]) {
+        } else if (column === headersColumns[3] || column === headersColumns[4]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 width: 150,
                 headerFilter: "input",
-                headerContext: function (e, column) {
-                    e.preventDefault();
-                    groupByField(column.getField());
-                }
-            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (i > 12 && i < 18) {
-            columns.push({
-                id: i,
-                title: name,
-                field: column,
-                formatter: "numberfmt",
-                visible: false,
-                headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (i == 9 || i == 18 || i === 8) {
+        } else if (i === 9) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 formatter: "numberfmt",
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i > 12 && i < 18) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                visible: false,
+                formatter: "numberfmt",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === 12) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 15,
+                    step: 1
+                },
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === 8 || i === 18) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                formatter: "numberfmt",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -186,7 +249,14 @@ function setDataColumns(headersColumns) {
                 field: column,
                 formatter: "numberfmt",
                 visible: false,
-                headerFilter: "input",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -199,6 +269,20 @@ function setDataColumns(headersColumns) {
                 field: column,
                 visible: false,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === headersColumns.length - 1) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                formatter: "checkfiles",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -210,6 +294,7 @@ function setDataColumns(headersColumns) {
                 title: name,
                 field: column,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -229,21 +314,20 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
     if (diff > 1000) {
         setTimeout(() => {
             table.replaceData(data)
-                .then(function() {
+                .then(function () {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
-                    console.log("replaceData " + (new Date() - timeProcess) + "ms");
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
                     document.getElementById('guide-btn').classList.remove('hidden');
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     console.log(error);
                 });
         }, timer);
     } else {
-        console.log("replaceData " + (new Date() - timeProcess) + "ms");
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         document.getElementById('guide-btn').classList.remove('hidden');
+        console.log('table done!');
     }
 }
 
@@ -308,6 +392,7 @@ function pointToComma_FR(d) {
     return (isNaN(parseFloat(d))) ? d : parseFloat(d).toLocaleString("fr-FR");
 }
 
+// Remove null, 0, blank, false, undefined and NaN values from an array
 function filter_array(test_array) {
     var index = -1,
         arr_length = test_array ? test_array.length : 0,
@@ -335,7 +420,6 @@ function exportCSVDefault(data, filename) {
 }
 
 /* SWEET ALERT and CREATE TABLE */
-
 function prettyDefault(title, text, html, icon, className) {
     swal({
         title: title,
@@ -343,9 +427,7 @@ function prettyDefault(title, text, html, icon, className) {
         content: html,
         icon: icon,
         className: className
-    }).then(value => {
-        // console.log(value);
-    });
+    }).then(value => {});
 }
 
 function prettyDefaultReload(title, text, icon) {
@@ -413,18 +495,16 @@ function createTable(headers, data, className) {
                     break;
             }
         });
-    // prettyDefault(title, text, html, "sweetalert-auto");
+
     return true;
 }
 
 // création simple de table html pour sweetALert pvtTable
-function createTableExtra(data, headers, className, extraTitle) {
-    // console.log(data, headers);
+function createTableExtra(data, headers, className, text, extraTitle) {
     var html = document.createElement("div"),
-    p = document.createElement("p"),
-    title = extraTitle,
-    text,
-    dataExport;
+        p = document.createElement("p"),
+        title = extraTitle,
+        dataExport;
 
     var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
     table += '<thead><tr>';
@@ -435,7 +515,6 @@ function createTableExtra(data, headers, className, extraTitle) {
     table += '</tr></thead>';
     table += '<tbody>';
     data.forEach(row => {
-        // console.log(row.length);
         table += '<tr>';
         row.forEach(cell => {
             table += '<td>' + cell + '</td>';
@@ -443,12 +522,11 @@ function createTableExtra(data, headers, className, extraTitle) {
         table += '</tr>';
     });
     table += '</tbody></table>';
-    // console.log($.parseHTML(extraTable)[0])
     html.appendChild($.parseHTML(table)[0]);
 
     swal({
             title: title,
-            text: text,
+            text: text ? text : "",
             content: html,
             className: "sweetalert-auto",
             buttons: {
@@ -468,7 +546,5 @@ function createTableExtra(data, headers, className, extraTitle) {
                     break;
             }
         });
-
-    // prettyDefault(title, text, html, "", "sweetalert-auto");
     return true;
 }

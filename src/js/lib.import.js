@@ -15,10 +15,8 @@ import 'tabulator-tables/dist/css/tabulator.min.css';
 import './style.css';
 import 'intro.js/introjs.css';
 
-import $ from 'jquery';
 
-// import * as introJs from 'intro.js';
-// console.log(introJs);
+// import $ from 'jquery';
 
 var Tabulator = require('tabulator-tables');
 

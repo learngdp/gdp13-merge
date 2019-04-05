@@ -38,14 +38,14 @@ const headersTemplate = [
     "G2C - Gestion de crise", // 30 - SPE 14
     "PAE - Du Projet à l'Action Entrepreneuriale", // 31 - SPE 15
     "Pre MOOC", // 32
-    // "Cohort Name",
     "Enrollment Track", // 33
     "Verification Status",
     "Certificate Eligible",
     "Certificate Delivered",
     "Certificate Type",
     "Enrollment Status",
-    "fichiers fusionnés"// 39
+    "fichiers fusionnés",
+    "Grade_TC" // 39
 ];
 
 const cohortesOptions = [
@@ -154,22 +154,6 @@ const fileNamesTemplate = {
     "-PA_": 17,
 };
 
-// const patternMail =
-//     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-// const regexTC = /_TC_\d{2}_/;
-// const regexPA = /_PA_\d{2}_/
-// const regexSPE = /_SPE-\w{2,4}_/;
-
-// const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
-
-// const regexFileNamesTemplate = /_(SPE-\w{2,4}|PA|TC)_/;
-
-// // pattern for short name column
-// const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
-// const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
-// const regexLivrable = /^Livrables [1|2|3]\:/;
-
 const patternMail =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -185,4 +169,3 @@ const regexFileNamesTemplate = /(_SPE-\w{2,4}|\-PA|\-TC)_/;
 const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
 const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
 const regexLivrable = /^Livrables [1|2|3]\:/;
-

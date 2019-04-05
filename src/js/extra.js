@@ -1,5 +1,5 @@
 function getDetailsCohortes(data, selected, cohortTitle) {
-    // console.log(selected, cohortTitle);
+
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
     var testPoint = function (d) {
         return patternPoint.test(d) ? d.replace(/\./, ",") : d;
@@ -10,7 +10,7 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             var gradesFull = v.map(d => (isNaN(parseFloat(d[selected]))) ? 0 : Math.round(parseFloat(d[selected]) * 100) / 100);
             gradesFull.sort();
             var grades = filter_array(gradesFull);
-            // if (grades.length >= 1) console.log(grades);
+
             var median = grades.length >= 1 ? parseFloat(d3.median(grades)) : 0,
                 min = grades.length >= 1 ? parseFloat(d3.min(grades)) : 0,
                 max = grades.length >= 1 ? parseFloat(d3.max(grades)) : 0,
@@ -39,12 +39,12 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             };
         })
         .entries(data);
-    // console.log(nestedCohortes);
+
 
     var cohortesHtml = [
         ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
             "9ème décile", "variance", "écart-type"
-        ] // , "rapport (D9/D1)"
+        ]
     ];
 
     nestedCohortes.forEach(obj => {
@@ -55,12 +55,12 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             v.decileFirst, v.decileLast, v.variance, v.deviation
         ]);
     })
-    // console.log(cohortesHtml);
+
     return cohortesHtml;
 }
 
 // for extra data
-var getExtraData = function (extraTitle, extraDataHtml, button, selected) {
+var getExtraData = function(extraTitle, extraDataHtml, button, selected) {
     var text;
     if (extraDataHtml.length > 1 && extraDataHtml[0].length === 2) { // p.innerHTML = extraDataHtml.map(arr => arr.join(" | ")).join(", ");
         text = (extraDataHtml.length - 1) + ' ' + extraTitle;
@@ -82,14 +82,15 @@ function number_test(n) {
 }
 
 function tableauFinalStandard(data, dataMappage) {
-    document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+    console.log(data[0]);
+
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
         "Student ID", // 0
         "Email", // 1
         "Étudiant",
         "Mail d'inscription",
-        "Cohorte", 
+        "Cohorte",
         "Classique",
         "Avancé",
         "S1 (%)", "S1 (/20)",
@@ -141,9 +142,11 @@ function tableauFinalStandard(data, dataMappage) {
     ];
 
     var headersSpe = [data[0].slice(17, 32)];
+
     var dataSpec = data.slice(1, data.length).sort(function (a, b) {
         return a[0] - b[0];
     });
+    console.log(data[0], headersSpe, dataSpec);
 
     // Test pour vérifier le format décimal dans le jeu de données... à optimiser
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
@@ -160,14 +163,16 @@ function tableauFinalStandard(data, dataMappage) {
     var rangeDevoirs = dataSpec.map((row) => row.slice(13, 16).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
 
     var name, cohorte, countSpe, classic2Modules, classic3devoirs;
-    // var patternSpe = /\d+\:\s{1}\[\w+\]/gi;
+
     var pass70 = 0.695;
 
-    // if (testComma.length > 0) {
+
     for (var i = 0, lgi = dataSpec.length; i < lgi; i++) {
         // valeurs avant splice
         name = dataSpec[i][3];
         cohorte = dataSpec[i][5];
+
+        // console.log(dataSpec[i]);
 
         // nombre spr réussies
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
@@ -188,8 +193,10 @@ function tableauFinalStandard(data, dataMappage) {
 
         // Ajout colonne vide pour mappage nom
         var checkEmail = dataMappage.find(item => {
+            // console.log(item.id, dataSpec[i][0]);
             return item.id === dataSpec[i][0];
         });
+        // console.log(checkEmail);
         (checkEmail && checkEmail !== undefined) ? checkEmail = checkEmail.email: checkEmail = "";
 
         // ajout colonnes email pour mappage mail inscription
@@ -203,67 +210,70 @@ function tableauFinalStandard(data, dataMappage) {
         classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
 
+        console.log(dataSpec[i][0], dataSpec[i][7], dataSpec[i][8], dataSpec[i][9], dataSpec[i][10]);
+
+
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
-        (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2))); // 100 (%)
+        (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2)) + '%'); // 100 (%)
         (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][7] * 100) / 5).toFixed(2))); // (/20)
 
-        (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][8] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][8] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][9] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][9] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][9] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][10] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][10] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][10] * 100) / 5).toFixed(2)));
 
         // examen final
-        (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][12] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][12] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][12] * 100) / 5).toFixed(2)));
 
         // devoirs de 1 à 3
-        (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][13] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][13] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][13] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][14] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][14] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][14] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][15] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][15] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][15] * 100) / 5).toFixed(2)));
 
         // specialisations
-        (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][17] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][17] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][17] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][18] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][18] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][18] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][19] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][19] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][19] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][20] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][20] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][20] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][21] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][21] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][21] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][22] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][22] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][22] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][23] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][23] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][23] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][24] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][24] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][24] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][25] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][25] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][25] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][26] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][26] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][26] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][27] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][27] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][27] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][28] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][28] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][28] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][29] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][29] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][29] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][30] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][30] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][30] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][31] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][31] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][31] * 100) / 5).toFixed(2)));
 
         // // suppression des colonnes
-        dataSpec[i].splice(7, 33);
+        dataSpec[i].splice(7, 34);
 
         // nombre spe réussi
         (countSpe) ? dataSpec[i].push(countSpe.toFixed(0)): dataSpec[i].push("");
@@ -279,10 +289,11 @@ function tableauFinalStandard(data, dataMappage) {
         ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
+    console.log(data[0]);
     // suppression de la 1ère lignes de titres
     data.splice(0, 1);
 
-    var dataExport = data; //.map(row => row.map(d => pointToComma_FR(d)));
+    var dataExport = data;
     dataExport.unshift(headersStandard);
 
     setTimeout(() => {

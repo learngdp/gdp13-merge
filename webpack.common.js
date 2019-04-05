@@ -2,8 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const DashboardPlugin = require('webpack-dashboard/plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const webpack = require('webpack');
-// const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     entry: {
@@ -21,9 +19,7 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery",
             "window.jQuery": "jquery'",
-            "window.$": "jquery",
-            // // other modules
-            // introJs: ['intro.js', 'introJs']
+            "window.$": "jquery"
         }),
         new DashboardPlugin()
     ],
@@ -41,17 +37,6 @@ module.exports = {
     performance: {
         hints: false
     },
-    // optimization: {
-    //     splitChunks: {
-    //         cacheGroups: {
-    //             vendor: {
-    //                 test: /[\\/]node_modules[\\/]/,
-    //                 name: 'vendor',
-    //                 chunks: 'all'
-    //             }
-    //         }
-    //     }
-    // },
     optimization: {
         runtimeChunk: 'single',
         splitChunks: {
@@ -65,7 +50,6 @@ module.exports = {
                         // get the name. E.g. node_modules/packageName/not/this/part.js
                         // or node_modules/packageName
                         const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-
                         // npm package names are URL-safe, but some servers don't like @ symbols
                         return `npm.${packageName.replace('@', '')}`;
                     },
@@ -113,5 +97,8 @@ module.exports = {
                 }
             }
         ]
+    },
+    externals: {
+        introJs: 'intro.min.js'
     }
 };

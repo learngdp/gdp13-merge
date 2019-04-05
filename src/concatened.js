@@ -15,10 +15,8 @@ import 'tabulator-tables/dist/css/tabulator.min.css';
 import './style.css';
 import 'intro.js/introjs.css';
 
-import $ from 'jquery';
 
-// import * as introJs from 'intro.js';
-// console.log(introJs);
+// import $ from 'jquery';
 
 var Tabulator = require('tabulator-tables');
 
@@ -62,13 +60,11 @@ window.addEventListener('load', function () {
 })
 console.log(lang, locale);
 // moment.locale(locale);
-var timeProcess;
 
 var allHeaders = [];
 var filesNb = 0;
 
 fileInput.onchange = function (e) {
-    timeProcess = new Date();
     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
     this.disabled = true;
 
@@ -79,44 +75,31 @@ fileInput.onchange = function (e) {
         y = regexFileNamesTemplate.test(y.name) ? y.name.match(regexFileNamesTemplate)[0] : y.name;
         return fileNamesTemplate[x] - fileNamesTemplate[y];
     });
-    // var filesNames = files.map(file => file.name);
-    // var testFiles = findFilesDuplicates(fileNames);
-    // console.log(testFiles);
-    // document.getElementById('dataTable-infos').innerHTML = menuColorHTML(files, [], 0);
 
     var totalSize = files.map(file => file.size).reduce((a, b) => a += b);
 
     let promises = [];
+    let fileNames = [];
     for (var i = 0, lgi = files.length; i < lgi; i++) {
-        promises.push(getDataFiles(files[i]));
+        promises.push(getDataFiles(files[i], fileNames));
     }
-    // console.log(promises);
 
     Promise.all(promises)
         .then(function (data) {
             let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
-            setTimeout(() => {
-                // console.log(data, uniqueHeaders, totalSize);
-                tableForFiles(data, uniqueHeaders)
-                // $('.fa-arrow-alt-circle-right').addClass('blink');
-            }, 10);
+            tableForFiles(data, uniqueHeaders)
 
         })
         .catch(function (error) {
             console.log(error);
             prettyDefaultReload("Information erreur", "Oups! " + error, "warning");
         });
-    console.log("timeProcess: " + (new Date() - timeProcess) + "ms");
 }
 
-// *** voir pour mettre ici le typed js *** pour beaucoup de fichiers
-function getDataFiles(file) {
-    // var delimiter = document.getElementById('delimiter-input').value;
-    // console.log(delimiter);
+function getDataFiles(file, fileNames) {
     return new Promise(function (resolve, reject) {
         var reader = new FileReader();
         reader.onload = (event) => {
-            // console.log(event);
             var textFromFileLoaded = event.target.result;
             let dataByFile = {},
                 flag;
@@ -124,7 +107,7 @@ function getDataFiles(file) {
                 header: true,
                 dynamicTyping: true,
                 // delimiter: delimiter ? delimiter[0] : "",
-                skipEmptyLines: true, // 'greedy',
+                skipEmptyLines: true,
                 chunk: function (results, parser) {
                     flag = checkHeaders(results.meta.fields, file);
                     if (flag) {
@@ -136,21 +119,21 @@ function getDataFiles(file) {
                     }
                 },
                 complete: function (results) {
-                    console.log('done! ', file.name, (new Date() - timeProcess) + "ms")
+                    if (fileNames.indexOf(file.name) !== -1)
+                        prettyDefaultReload("Information doublons", "Oups! Apparement au moins 1 doublons dans la sélection... " + file.name, "warning");
+                    fileNames.push(file.name);
                 }
             });
         };
         reader.onprogress = (event) => {
-            // updateIndicators(event.loaded, filesNb, 0, 0)
+            ;
         };
         reader.readAsText(file, "UTF-8");
         filesNb++;
     });
-    console.log("getDataFiles: " + (new Date() - timeProcess) + "ms");
 }
 
 function flatData(dataFiles, uniqueHeaders) {
-    console.log("flatData: " + (new Date() - timeProcess) + "ms");
     return new Promise(function (resolve) {
         var dataSelected = [],
             flat = [];
@@ -164,7 +147,6 @@ function flatData(dataFiles, uniqueHeaders) {
                 }));
             });
         } else {
-            // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
                     obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
@@ -173,7 +155,7 @@ function flatData(dataFiles, uniqueHeaders) {
         }
 
         var arrConcatened = [].concat(...dataSelected);
-        // also allow to get unique headers
+
         var headersTemplate = {};
         uniqueHeaders.forEach((el, i) => {
             headersTemplate[el] = "";
@@ -200,35 +182,30 @@ function flatData(dataFiles, uniqueHeaders) {
 
         dataMerged = checkWrongID(dataMerged);
 
-        // console.log(dataMerged);
-
-        var getDataMappage = function(result) {
+        var getDataMappage = function (result) {
             var delimiter = Papa.parse(result).meta.delimiter;
-            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function(d) {
-                // ( d["Student ID"] != undefined && /^(\r\n|\r|\n)$/.test(d["Student ID"].toString()) )
-                // console.log(d[0], /^(\r\n|\r|\n)$/.test(d[0]));
+            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function (d) {
                 if (d && d !== undefined && d[0].length !== 0) return d;
             }).sort((a, b) => a[0] - b[0]);
             var dataMappage = d3.csvParse(Papa.unparse(dataResult));
-            // console.log(data.flat, dataMappage);
+
             if (dataResult !== undefined && checkProfile(dataResult)) {
-                resolve({ flat: dataMerged , dataMappage: dataMappage });
-                // setTimeout(() => launchDataMappage(data.flat, dataMappage), 500);
+                resolve({
+                    flat: dataMerged,
+                    dataMappage: dataMappage
+                });
             }
         }
 
-        document.getElementById('fileInputMappage').onchange = function(e) {
+        document.getElementById('fileInputMappage').onchange = function (e) {
             this.disabled = true;
-            // console.log(document.getElementById('profil_info-div').childNodes);
-            // document.getElementById('profil_info-div').childNodes[3].classList.replace('labelProfile', 'normal');
-            // $('.fa-arrow-alt-circle-right').removeClass('blink');
-            document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             document.getElementById('profil_info-div').classList.replace("inline", "hidden");
+            document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             var file = this.files[0];
             var reader = new FileReader();
-            reader.onprogress = function(event) {}
-            reader.onloadend = function(event) {}
-            reader.onload = function(event) {
+            reader.onprogress = function (event) {};
+            reader.onloadend = function (event) {};
+            reader.onload = function (event) {
                 getDataMappage(reader.result);
             }
             reader.readAsText(file);
@@ -237,17 +214,14 @@ function flatData(dataFiles, uniqueHeaders) {
 }
 
 function tableForFiles(dataFiles, uniqueHeaders) {
-    // console.log(data, uniqueHeaders);
-    // *** check doublons avant de continuer
-    // fin de check doublons***
     document.getElementById('grade_report-div').classList.replace("inline", "hidden");
     document.getElementById('profil_info-div').classList.replace("hidden", "inline");
     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-
     flatData(dataFiles, uniqueHeaders)
         .then(function (data) {
             var flat = d3.csvParse(Papa.unparse(data.flat));
             var dataMappage = data.dataMappage;
+
             var jsonData = flat.map(function (obj, i) {
                 var username;
                 if (obj["Username"] && obj["Username"] !== undefined) {
@@ -260,22 +234,13 @@ function tableForFiles(dataFiles, uniqueHeaders) {
                 if (resultId === undefined) {
                     obj["Name"] = "Absent sur profile_info";
                 } else {
-                    // console.log(resultId.year_of_birth, resultId.gender);
                     obj["Name"] = resultId.name;
                     obj["year_of_birth"] = (resultId.year_of_birth) ? resultId.year_of_birth : "";
-                    // obj["gender"] = (resultId.gender) ? resultId.gender : "";
-                    // obj["level_of_education"] = (resultId.level_of_education) ? resultId.level_of_education : "";
                 }
                 return sortObjectKeys(obj, headersTemplate);
             });
+            globalReport(jsonData, dataMappage);
 
-            var flag = false;
-            setTimeout(() => {
-                flag = globalReport(jsonData, dataMappage); // launchTab(d3.csvParse(Papa.unparse(jsonData)));
-                if (flag) {
-                    console.log("tabulator launch !" + (new Date() - timeProcess) + "ms");
-                }
-            }, 10);
         }).catch(function (error) {
             console.log(error);
             swal({
@@ -287,19 +252,14 @@ function tableForFiles(dataFiles, uniqueHeaders) {
 }
 
 /* HELPERS imported files */
-
 function mergedDataTest(headers, data) {
     var selected = document.getElementById('filter-field').value;
 
-    // headers.splice(headers.length-1, 1, "fichiers fusionnés");
     headers.push("fichiers fusionnés");
-
-    // console.log(headers, data);
+    headers.push("Grade_TC");
 
     var jsonData = d3.csvParse(Papa.unparse(data));
-    // console.log(jsonData);
 
-    // also allow to get unique headers
     var headersTemplate = {};
     headers.forEach((el, i) => {
         headersTemplate[el] = "";
@@ -309,9 +269,7 @@ function mergedDataTest(headers, data) {
     var nestedData = d3.nest()
         .key(d => d["Student ID"])
         .rollup(v => {
-            var arr = v.map(obj => [].concat.call([], Object.values(obj))); // v.map(obj => [].concat.apply([], Object.values(obj)));
-            // voir pour remplacer les expresions nécessaires avec la ligne de dessous
-            // [...new Set([].concat(...data.map(obj => obj["headers"])))]
+            var arr = v.map(obj => [].concat.call([], Object.values(obj)));
             arr.unshift(headers);
             return {
                 arr: arr
@@ -319,17 +277,16 @@ function mergedDataTest(headers, data) {
         })
         .entries(jsonData);
 
-    // console.log(nestedData);
-
     for (var i = 0, lgi = nestedData.length; i < lgi; i++) {
         var item = nestedData[i],
-            // key = item.key,
             values = item.value.arr;
-        // console.log(values);
-        var obj = {};
+        var obj = {},
+            uniqueValues;
         headers.forEach((key, i) => {
-            if (key == "Grade" || key == "Enrollment Track" || key == "Enrollment Status" || key == "fichiers fusionnés") {
+            if (key === "Grade" || key === "Enrollment Track" || key === "Enrollment Status" || key === "fichiers fusionnés" || key === "Grade_TC") {
                 obj[key] = dataByColumn(values.slice(1, values.length), i);
+                (obj["fichiers fusionnés"] !== undefined && obj["fichiers fusionnés"].length > 0 && obj["fichiers fusionnés"][0] === "TC") ?
+                obj["Grade_TC"] = obj["Grade"][0]: obj["Grade_TC"] = "";
             } else {
                 obj[key] = [...new Set(dataByColumn(values.slice(1, values.length), i))];
             }
@@ -338,21 +295,19 @@ function mergedDataTest(headers, data) {
     }
 
     var dataMerged = d3.csvParseRows(Papa.unparse(merged));
-    // console.log(dataMerged);
 
     return dataMerged;
 }
 
 function dataByColumn(arr, col) {
-    // console.log(arr, col);
     var column = [],
         value;
     for (var i = 0, lgi = arr.length; i < lgi; i++) {
         value = arr[i][col];
         column.push(value);
     }
-    return filter_array(column); // voir avec _.compact
-} 
+    return filter_array(column);
+}
 
 // classe en fonction dans modèles ici headersTemplate
 function sortObjectKeys(obj, keys) {
@@ -367,7 +322,6 @@ function checkHeaders(headers, file) {
     var flag;
     headers.forEach(function (title, i) {
         var headersElement = headersTemplate[headersTemplate.indexOf(title.trim())];
-        // console.log(title, title == title.trim(), headersElement, headersTemplate.indexOf(title.trim()));
         if (headersTemplate.indexOf(title.trim()) === -1) {
             var html = document.createElement("div");
             var p = document.createElement("p");
@@ -389,7 +343,6 @@ function checkHeaders(headers, file) {
 }
 
 function checkProfile(data) {
-    console.time("import");
     var flag = true;
     data[0].slice(0, 4).forEach(el => {
         if (headersProfile.indexOf(el) === -1) flag = false;
@@ -406,33 +359,6 @@ function checkProfile(data) {
             document.getElementById('fileInputMappage').disabled = false;
         });
     return flag;
-}
-
-function findFilesDuplicates(fileNames) {
-    return new Promise(function (resolve, reject) {
-        var gradesImported = [];
-        filesNames.map(name => {
-            if (name.match(regexAll)) return name.match(regexAll);
-        }).forEach(reg => {
-            if (reg !== undefined) gradesImported.push(reg[1]);
-        });
-        var duplicates = find_duplicate_in_array(gradesImported);
-        console.log(duplicates);
-        var html = document.createElement("div"),
-            p = document.createElement("p");
-        p.innerHTML = duplicates.join();
-        html.appendChild(p);
-        if (duplicates.length > 0) {
-            prettyDefault(
-                "Information fichiers importés",
-                "Oups ! Apparemment 1 ou plusieurs fichiers importés sont en doublons.\nVeuillez rafraichir la page de votre navigateur... ",
-                html, "warning");
-            document.getElementById('fileInputMappage').disabled = true;
-            resolve(false);
-        } else {
-            resolve(true);
-        }
-    })
 }
 /* IMPORTANT: la position des titres dans le tableau (headers) est à respecter car repris dans les sorties analytics et standard */
 /* par contre... aucune incidence sur l'emplacement des colonnes des fichiers csv import en entrée (en principe;) */
@@ -474,14 +400,14 @@ const headersTemplate = [
     "G2C - Gestion de crise", // 30 - SPE 14
     "PAE - Du Projet à l'Action Entrepreneuriale", // 31 - SPE 15
     "Pre MOOC", // 32
-    // "Cohort Name",
     "Enrollment Track", // 33
     "Verification Status",
     "Certificate Eligible",
     "Certificate Delivered",
     "Certificate Type",
     "Enrollment Status",
-    "fichiers fusionnés"// 39
+    "fichiers fusionnés",
+    "Grade_TC" // 39
 ];
 
 const cohortesOptions = [
@@ -590,22 +516,6 @@ const fileNamesTemplate = {
     "-PA_": 17,
 };
 
-// const patternMail =
-//     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-// const regexTC = /_TC_\d{2}_/;
-// const regexPA = /_PA_\d{2}_/
-// const regexSPE = /_SPE-\w{2,4}_/;
-
-// const regexAllSPE = /_(SPE-\w{2,4}|PA_\d{2}|TC_\d{2})_/;
-
-// const regexFileNamesTemplate = /_(SPE-\w{2,4}|PA|TC)_/;
-
-// // pattern for short name column
-// const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
-// const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
-// const regexLivrable = /^Livrables [1|2|3]\:/;
-
 const patternMail =
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -622,11 +532,9 @@ const regexHeadersSPE = /\b[A-Z0-9]{2,4}\b\s\-/;
 const regexEvalHebdo = /^Évaluation Hebdo [1|2|3|4]\:/;
 const regexLivrable = /^Livrables [1|2|3]\:/;
 
-
 const format2dec = d3.format(".2f");
 const formatPercent = d3.format(".0%");
 
-/* tabulator */
 // créer un nouveau format pour les colonnes
 Tabulator.prototype.extendModule("format", "formatters", {
     numberfmt: function (cell, formatterParams) {
@@ -638,6 +546,10 @@ Tabulator.prototype.extendModule("format", "formatters", {
         }
         return cellFormatted;
     },
+    checkfiles: function (cell, formatterParams) {
+        var cellValue = cell.getValue();
+        return cellValue;
+    }
 });
 
 // options for table
@@ -653,17 +565,17 @@ function tableOptions(data, columns) {
     footerContent += '</div><div style="margin-left: 4em;" class="inline">';
     footerContent += '<span style="margin-left: 2em">groupe.s: </span><span id="groupsNumber" style="font-weight: 900"></span>'
     footerContent += '</div></div>';
+
     return {
         selectable: true,
-        height: Math.round(window.innerHeight)-50,
+        height: Math.round(window.innerHeight) - 50,
         data: data,
         reactiveData: true,
         tooltipsHeader: true,
         columns: columns,
         pagination: "local",
-        paginationSize: 50,
+        paginationSize: 100,
         movableColumns: true,
-        headerFilterPlaceholder: "...",
         footerElement: footerContent,
         history: true,
         tooltips: true,
@@ -685,7 +597,7 @@ function tableOptions(data, columns) {
             var groupByHeader = document.getElementById('groupBy-input').value;
             var groupTitle;
             var subGroups = group.getSubGroups();
-            if (subGroups.length == 0) {
+            if (subGroups.length === 0) {
                 groupTitle = "<span style='color:#0000FFFF; margin-right: 5px;' title='clic droit pour export'>" + groupByHeader + "</span> : " + value +
                     "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
             } else {
@@ -701,7 +613,7 @@ function tableOptions(data, columns) {
             var rowsData = [];
             var subGroups = group.getSubGroups();
             var groupElement = group.getElement();
-            if (subGroups.length == 0) {
+            if (subGroups.length === 0) {
                 var rows = group.getRows().forEach(row => {
                     rowsData.push(row.getData());
                 });
@@ -719,21 +631,33 @@ function tableOptions(data, columns) {
     }
 }
 
+// *** à revoir
+function getGroup(group) {
+    var groups = [];
+    while (group.getSubGroups()) {
+        group.getSubGroups().forEach(subGroup => {
+            console.log(subGroup)
+            groups.push(subGroup);
+        });
+    };
+    return groups;
+}
+
 function setDataColumns(headersColumns) {
     var columns = [],
         name;
     headersColumns.forEach((column, i) => {
         name = columnName(column);
-        if (column == headersColumns[0]) {
+        if (column === headersColumns[0]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 frozen: true,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 cellContext: function (e, cell) {
                     var rowData = Object.entries(cell.getRow().getData());
-                    // console.log(["entête", "valeur"], rowData, "pvtTable");
                     createTable(["entête", "valeur"], rowData, "pvtTable");
                     e.preventDefault();
                 },
@@ -742,7 +666,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (column == headersColumns[1]) {
+        } else if (column === headersColumns[1]) {
             columns.push({
                 id: i,
                 title: name,
@@ -750,55 +674,103 @@ function setDataColumns(headersColumns) {
                 frozen: true,
                 width: 150,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
-            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (column == headersColumns[2]) {
+            });
+        } else if (column === headersColumns[2]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 visible: false,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (column == headersColumns[3] || column == headersColumns[4]) {
+        } else if (column === headersColumns[3] || column === headersColumns[4]) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 width: 150,
                 headerFilter: "input",
-                headerContext: function (e, column) {
-                    e.preventDefault();
-                    groupByField(column.getField());
-                }
-            }); //, formatter: "link", formatterParams: { urlPrefix: "mailto:" } });
-        } else if (i > 12 && i < 18) {
-            columns.push({
-                id: i,
-                title: name,
-                field: column,
-                formatter: "numberfmt",
-                visible: false,
-                headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (i == 9 || i == 18 || i === 8) {
+        } else if (i === 9) {
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 formatter: "numberfmt",
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i > 12 && i < 18) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                visible: false,
+                formatter: "numberfmt",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === 12) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 15,
+                    step: 1
+                },
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === 8 || i === 18) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                formatter: "numberfmt",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -811,7 +783,14 @@ function setDataColumns(headersColumns) {
                 field: column,
                 formatter: "numberfmt",
                 visible: false,
-                headerFilter: "input",
+                headerFilter: "number",
+                headerFilterPlaceholder: ">=",
+                headerFilterFunc: ">=",
+                headerFilterParams: {
+                    min: 0,
+                    max: 1,
+                    step: 0.01
+                },
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -824,6 +803,20 @@ function setDataColumns(headersColumns) {
                 field: column,
                 visible: false,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                headerContext: function (e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === headersColumns.length - 1) {
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "input",
+                headerFilterPlaceholder: "...",
+                formatter: "checkfiles",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -835,6 +828,7 @@ function setDataColumns(headersColumns) {
                 title: name,
                 field: column,
                 headerFilter: "input",
+                headerFilterPlaceholder: "...",
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -854,21 +848,20 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
     if (diff > 1000) {
         setTimeout(() => {
             table.replaceData(data)
-                .then(function() {
+                .then(function () {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
-                    console.log("replaceData " + (new Date() - timeProcess) + "ms");
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
                     document.getElementById('guide-btn').classList.remove('hidden');
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     console.log(error);
                 });
         }, timer);
     } else {
-        console.log("replaceData " + (new Date() - timeProcess) + "ms");
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         document.getElementById('guide-btn').classList.remove('hidden');
+        console.log('table done!');
     }
 }
 
@@ -933,6 +926,7 @@ function pointToComma_FR(d) {
     return (isNaN(parseFloat(d))) ? d : parseFloat(d).toLocaleString("fr-FR");
 }
 
+// Remove null, 0, blank, false, undefined and NaN values from an array
 function filter_array(test_array) {
     var index = -1,
         arr_length = test_array ? test_array.length : 0,
@@ -960,7 +954,6 @@ function exportCSVDefault(data, filename) {
 }
 
 /* SWEET ALERT and CREATE TABLE */
-
 function prettyDefault(title, text, html, icon, className) {
     swal({
         title: title,
@@ -968,9 +961,7 @@ function prettyDefault(title, text, html, icon, className) {
         content: html,
         icon: icon,
         className: className
-    }).then(value => {
-        // console.log(value);
-    });
+    }).then(value => {});
 }
 
 function prettyDefaultReload(title, text, icon) {
@@ -1038,18 +1029,16 @@ function createTable(headers, data, className) {
                     break;
             }
         });
-    // prettyDefault(title, text, html, "sweetalert-auto");
+
     return true;
 }
 
 // création simple de table html pour sweetALert pvtTable
-function createTableExtra(data, headers, className, extraTitle) {
-    // console.log(data, headers);
+function createTableExtra(data, headers, className, text, extraTitle) {
     var html = document.createElement("div"),
-    p = document.createElement("p"),
-    title = extraTitle,
-    text,
-    dataExport;
+        p = document.createElement("p"),
+        title = extraTitle,
+        dataExport;
 
     var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
     table += '<thead><tr>';
@@ -1060,7 +1049,6 @@ function createTableExtra(data, headers, className, extraTitle) {
     table += '</tr></thead>';
     table += '<tbody>';
     data.forEach(row => {
-        // console.log(row.length);
         table += '<tr>';
         row.forEach(cell => {
             table += '<td>' + cell + '</td>';
@@ -1068,12 +1056,11 @@ function createTableExtra(data, headers, className, extraTitle) {
         table += '</tr>';
     });
     table += '</tbody></table>';
-    // console.log($.parseHTML(extraTable)[0])
     html.appendChild($.parseHTML(table)[0]);
 
     swal({
             title: title,
-            text: text,
+            text: text ? text : "",
             content: html,
             className: "sweetalert-auto",
             buttons: {
@@ -1093,8 +1080,6 @@ function createTableExtra(data, headers, className, extraTitle) {
                     break;
             }
         });
-
-    // prettyDefault(title, text, html, "", "sweetalert-auto");
     return true;
 }
 function globalReport(jsonData, dataMappage) {
@@ -1117,10 +1102,10 @@ function globalReport(jsonData, dataMappage) {
 
     var buttonCohortes = document.getElementById('cohortes-btn');
     buttonCohortes.innerHTML = cohortes.length + ' cohortes <i class="fas fa-download"></i>';
-    // ***
 
     var headersSpe = [data[0].slice(17, 32)];
     var rangeSpe = data.slice(1, data.length).map((row) => row.slice(17, 32).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
+
     data[0].splice(6, 0, 'Attestation PC');
     data[0].splice(7, 0, 'Attestation PA');
     data[0].splice(8, 0, 'Grade TC');
@@ -1130,7 +1115,7 @@ function globalReport(jsonData, dataMappage) {
 
     var pass70 = 0.695,
         absences = 0,
-        row, countSpe;
+        checkFiles = [], row, countSpe;
 
     for (var i = 0, lgi = data.slice(1, data.length).length; i < lgi; i++) {
         row = data.slice(1, data.length)[i];
@@ -1140,6 +1125,7 @@ function globalReport(jsonData, dataMappage) {
         var livrableAvg = row[16];
         var enrollmentTrack = row[33] != undefined ? row[33].split(',') : "";
         var fusionnes = row[39] != undefined ? row[39].split(',') : "";
+        var gradeTC = row[40];
 
         var verifieldTuples = {};
         enrollmentTrack.forEach((track, i) => {
@@ -1148,6 +1134,12 @@ function globalReport(jsonData, dataMappage) {
 
         if (row[3] === "Absent sur profile_info")
             absences++;
+
+        if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
+            checkFiles.push([row[0], row[39]]);
+        } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length-1] !== 'PA') {
+            checkFiles.push([row[0], row[39]]);
+        }
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 
@@ -1173,32 +1165,39 @@ function globalReport(jsonData, dataMappage) {
             attestationPA;
 
         var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
+
         var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
 
-        var enrollment_oui = (verifieldTuples["TC"] == "verified" && verifieldTuples[cellHeader1] == "verified" && verifieldTuples[cellHeader2] == "verified");
+        var enrollment_oui = (verifieldTuples["TC"] === "verified" && verifieldTuples[cellHeader1] === "verified" && verifieldTuples[cellHeader2] === "verified");
+
         var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
 
         // validation attestation PC
         (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && cohortName != "") ? attestationPC = "OUI" : (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
 
         // validation attestion PA
-        (PA_oui && enrollment_oui) ? attestationPA = "OUI" : (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
+        (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
 
-        // Attestation PC
         row.splice(6, 0, attestationPC);
-
-        // Attestation PA
         row.splice(7, 0, attestationPA);
-
-        row.splice(8, 0, grades[0]);
-
+        row.splice(8, 0, gradeTC);
         row.splice(10, 0, cellHeader1);
         row.splice(11, 0, cellHeader2);
         row.splice(12, 0, countSpe);
+
+        row.splice(46, 1);
     }
-    setTimeout(() => {
-        launchTab(d3.csvParse(Papa.unparse(data)), absences); // dataToTable(data, cohortes, cohortTitle);
-    }, 100);
+    data[0].splice(46, 1);
+
+    if (checkFiles.length > 0) {
+        document.getElementById('checkFiles-btn').classList.replace('hidden', 'inline')
+        document.getElementById('checkFiles-btn').classList.add('blink');
+    }
+
+    document.getElementById('checkFiles-btn').onclick = function() {
+        checkFiles.unshift([data[0][0], data[0][40]]);
+        exportCSVDefault(checkFiles, "erreur-fusion-fichiers");
+    }
 
     document.getElementById('finalStandard-btn').onclick = function(e) {
         // console.log(e);
@@ -1215,22 +1214,17 @@ function globalReport(jsonData, dataMappage) {
         }, 100);
     }
 
-    // ***
+    launchTab(d3.csvParse(Papa.unparse(data)), absences); // dataToTable(data, cohortes, cohortTitle);
 
-    console.log("globalReport end " + (new Date() - timeProcess) + "ms");
     return true;
 }
 
 function launchTab(jsonFromCSV, absences) {
-    console.log("start " + (new Date() - timeProcess) + "ms");
     // console.log(jsonFromCSV);
 
     var data = jsonFromCSV.length > 1000 ? jsonFromCSV.slice(0, 1000) : jsonFromCSV.slice(0, jsonFromCSV.length);
     var diff = jsonFromCSV.slice(0, jsonFromCSV.length).length - data.length;
-
-    // *** voir pour raccourcir les titres des SPE surtout
-    var headers = jsonFromCSV.columns; //.map(header => regexAllSPE.test(header) ? header.match(regexAllSPE)[0].replace(/\_/g, '') : header);
-    // console.log(headers);
+    var headers = jsonFromCSV.columns; 
 
     // fill select element after load
     fillOptionsSelect(headers);
@@ -1242,33 +1236,28 @@ function launchTab(jsonFromCSV, absences) {
 
     //create Tabulator on DOM element with id "table-app"
     var table = new Tabulator("#table-app", tableOptions(data, columns));
-    // table.setLocale("fr"); // *** à revoir ***
-
-    // just for dev
-    console.log("tabulator " + (new Date() - timeProcess) + "ms");
 
     // for large data
     replaceDataAfterLoaded(table, jsonFromCSV, diff, 1000);
 
-    // interaction
-
     //Trigger setFilter function with correct parameters
     function updateFilter() {
-        var filter = $("#filter-field").val(); //$("#filter-field").val() == "function" ? customFilter : $("#filter-field").val();
-        if ($("#filter-field").val() == "function") {
+        var filter = $("#filter-field").val();
+        if ($("#filter-field").val() === "function") {
             $("#filter-type").prop("disabled", true);
             $("#filter-value").prop("disabled", true);
         } else {
             $("#filter-type").prop("disabled", false);
             $("#filter-value").prop("disabled", false);
         }
+        console.log(filter, $("#filter-type").val(), $("#filter-value").val());
         table.setFilter(filter, $("#filter-type").val(), $("#filter-value").val());
     }
     //Update filters on value change
     $("#filter-field, #filter-type").change(updateFilter);
     $("#filter-value").keyup(updateFilter);
     //Clear filters on "Clear Filters" button click
-    $("#filter-clear").click(function () {
+    $("#filter-clear").click(function() {
         $("#filter-field").val("Student ID");
         $("#filter-type").val("like");
         $("#filter-value").val("");
@@ -1276,12 +1265,12 @@ function launchTab(jsonFromCSV, absences) {
         table.clearFilter();
     });
 
-    document.getElementById('groupBy-btn').onclick = function (e) {
+    document.getElementById('groupBy-btn').onclick = function(e) {
         var groupValues = document.getElementById('groupBy-input').value;
-        var fields = [];
+        var fields = [],
+            groupsNumber = [];
         if (groupValues) {
             var fields = Array.compact(groupValues.split(/[\;\,\>]+/));
-            // console.log(fields, headers.indexOf(fields.join('')));
             fields = fields.map(header => String.trim(header)).filter(header => headers.indexOf(header) != -1);
             if (fields.length > 0) {
                 table.setGroupBy(fields);
@@ -1290,30 +1279,31 @@ function launchTab(jsonFromCSV, absences) {
         }
     }
 
-    document.getElementById('groupBy-btn').onmouseover = function (e) {
+    document.getElementById('groupBy-btn').onmouseover = function(e) {
         var title = document.getElementById('groupBy-input').value ? "grouper par: " + document.getElementById('groupBy-input').value :
             "grouper par entête"
         e.target.title = title;
     };
 
-    document.getElementById('degroupBy-btn').onclick = function (e) {
+    document.getElementById('degroupBy-btn').onclick = function(e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
+        document.getElementById('groupsNumber').innerHTML = "";
         document.getElementById('groupBy-btn').innerHTML = '<i class="fas fa-lock-open"></i>'
         document.getElementById('groupBy-btn').title = "grouper par entête"
     }
 
-    document.getElementById('hide-col').onclick = function () {
+    document.getElementById('hide-col').onclick = function() {
         let columnName = document.getElementById('filter-field').value;
         table.hideColumn(columnName);
     }
 
-    document.getElementById('show-col').onclick = function () {
+    document.getElementById('show-col').onclick = function() {
         let columnName = document.getElementById('filter-field').value;
         table.showColumn(columnName);
     }
 
-    document.getElementById('showAll-coll').onclick = function () {
+    document.getElementById('showAll-coll').onclick = function() {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         setTimeout(() => {
             headers.forEach(header => {
@@ -1333,31 +1323,21 @@ function launchTab(jsonFromCSV, absences) {
         }, 10)
     }
 
-    $("#deselectAll-rows").click(function () {
+    $("#deselectAll-rows").click(function() {
         table.deselectRow();
     });
 
-    document.getElementById('exportCSV-btn').onclick = function (e) {
+    document.getElementById('exportCSV-btn').onclick = function(e) {
         table.download("csv", "export-grades.csv", {delimiter:","});
-        // document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        // console.time("export");
-        // setTimeout(() => {
-        //     // console.log(merged);
-        //     exportCSVDefault(dataFiltered(), "global_report");
-        //     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-        //     console.timeEnd("export");
-        // }, 100);
     }
 
-    var dataFiltered = function () {
+    var dataFiltered = function() {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
         var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value))
         console.log(table.getData());
 
         var columnsVisible = columns.map(column => column.field);
-        // console.log(columnsVisible);
-        // solution https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
         var dataFiltered = filteredData.map(item => {
             return Object.keys(item)
                 .filter(key => columnsVisible.includes(key))
@@ -1367,18 +1347,21 @@ function launchTab(jsonFromCSV, absences) {
                 }, {})
         });
         var dataExport = d3.csvParseRows(Papa.unparse(dataFiltered));
-        // dataExport = dataExport.map(el => el.slice(0, el.length-1)); // initialement pour enliver l'id par row
         return dataExport;
     };
 
     setTimeout(() => {
+        console.log(absences);
         if (absences > 0)
             document.getElementById('absences').innerHTML = absences;
     }, 10);
+
     return true;
 } // FIN DE LAUNCHtAB
+
+
 function getDetailsCohortes(data, selected, cohortTitle) {
-    // console.log(selected, cohortTitle);
+
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
     var testPoint = function (d) {
         return patternPoint.test(d) ? d.replace(/\./, ",") : d;
@@ -1389,7 +1372,7 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             var gradesFull = v.map(d => (isNaN(parseFloat(d[selected]))) ? 0 : Math.round(parseFloat(d[selected]) * 100) / 100);
             gradesFull.sort();
             var grades = filter_array(gradesFull);
-            // if (grades.length >= 1) console.log(grades);
+
             var median = grades.length >= 1 ? parseFloat(d3.median(grades)) : 0,
                 min = grades.length >= 1 ? parseFloat(d3.min(grades)) : 0,
                 max = grades.length >= 1 ? parseFloat(d3.max(grades)) : 0,
@@ -1418,12 +1401,12 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             };
         })
         .entries(data);
-    // console.log(nestedCohortes);
+
 
     var cohortesHtml = [
         ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
             "9ème décile", "variance", "écart-type"
-        ] // , "rapport (D9/D1)"
+        ]
     ];
 
     nestedCohortes.forEach(obj => {
@@ -1434,12 +1417,12 @@ function getDetailsCohortes(data, selected, cohortTitle) {
             v.decileFirst, v.decileLast, v.variance, v.deviation
         ]);
     })
-    // console.log(cohortesHtml);
+
     return cohortesHtml;
 }
 
 // for extra data
-var getExtraData = function (extraTitle, extraDataHtml, button, selected) {
+var getExtraData = function(extraTitle, extraDataHtml, button, selected) {
     var text;
     if (extraDataHtml.length > 1 && extraDataHtml[0].length === 2) { // p.innerHTML = extraDataHtml.map(arr => arr.join(" | ")).join(", ");
         text = (extraDataHtml.length - 1) + ' ' + extraTitle;
@@ -1461,14 +1444,15 @@ function number_test(n) {
 }
 
 function tableauFinalStandard(data, dataMappage) {
-    document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+    console.log(data[0]);
+
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
         "Student ID", // 0
         "Email", // 1
         "Étudiant",
         "Mail d'inscription",
-        "Cohorte", 
+        "Cohorte",
         "Classique",
         "Avancé",
         "S1 (%)", "S1 (/20)",
@@ -1520,9 +1504,11 @@ function tableauFinalStandard(data, dataMappage) {
     ];
 
     var headersSpe = [data[0].slice(17, 32)];
+
     var dataSpec = data.slice(1, data.length).sort(function (a, b) {
         return a[0] - b[0];
     });
+    console.log(data[0], headersSpe, dataSpec);
 
     // Test pour vérifier le format décimal dans le jeu de données... à optimiser
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
@@ -1539,14 +1525,16 @@ function tableauFinalStandard(data, dataMappage) {
     var rangeDevoirs = dataSpec.map((row) => row.slice(13, 16).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
 
     var name, cohorte, countSpe, classic2Modules, classic3devoirs;
-    // var patternSpe = /\d+\:\s{1}\[\w+\]/gi;
+
     var pass70 = 0.695;
 
-    // if (testComma.length > 0) {
+
     for (var i = 0, lgi = dataSpec.length; i < lgi; i++) {
         // valeurs avant splice
         name = dataSpec[i][3];
         cohorte = dataSpec[i][5];
+
+        // console.log(dataSpec[i]);
 
         // nombre spr réussies
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
@@ -1567,8 +1555,10 @@ function tableauFinalStandard(data, dataMappage) {
 
         // Ajout colonne vide pour mappage nom
         var checkEmail = dataMappage.find(item => {
+            // console.log(item.id, dataSpec[i][0]);
             return item.id === dataSpec[i][0];
         });
+        // console.log(checkEmail);
         (checkEmail && checkEmail !== undefined) ? checkEmail = checkEmail.email: checkEmail = "";
 
         // ajout colonnes email pour mappage mail inscription
@@ -1582,67 +1572,70 @@ function tableauFinalStandard(data, dataMappage) {
         classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
 
+        console.log(dataSpec[i][0], dataSpec[i][7], dataSpec[i][8], dataSpec[i][9], dataSpec[i][10]);
+
+
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
-        (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2))); // 100 (%)
+        (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2)) + '%'); // 100 (%)
         (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][7] * 100) / 5).toFixed(2))); // (/20)
 
-        (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][8] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][8]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][8] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][9] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][9] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][9]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][9] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][10] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][10] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][10]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][10] * 100) / 5).toFixed(2)));
 
         // examen final
-        (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][12] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][12] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][12]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][12] * 100) / 5).toFixed(2)));
 
         // devoirs de 1 à 3
-        (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][13] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][13] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][13]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][13] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][14] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][14] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][14]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][14] * 100) / 5).toFixed(2)));
 
-        (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][15] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][15] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][15]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][15] * 100) / 5).toFixed(2)));
 
         // specialisations
-        (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][17] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][17] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][17]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][17] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][18] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][18] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][18]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][18] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][19] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][19] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][19]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][19] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][20] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][20] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][20]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][20] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][21] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][21] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][21]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][21] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][22] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][22] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][22]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][22] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][23] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][23] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][23]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][23] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][24] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][24] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][24]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][24] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][25] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][25] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][25]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][25] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][26] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][26] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][26]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][26] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][27] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][27] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][27]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][27] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][28] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][28] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][28]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][28] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][29] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][29] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][29]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][29] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][30] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][30] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][30]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][30] * 100) / 5).toFixed(2)));
-        (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][31] * 100).toFixed(2)));
+        (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][31] * 100).toFixed(2)) + '%');
         (isNaN(parseFloat(dataSpec[i][31]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat((dataSpec[i][31] * 100) / 5).toFixed(2)));
 
         // // suppression des colonnes
-        dataSpec[i].splice(7, 33);
+        dataSpec[i].splice(7, 34);
 
         // nombre spe réussi
         (countSpe) ? dataSpec[i].push(countSpe.toFixed(0)): dataSpec[i].push("");
@@ -1658,10 +1651,11 @@ function tableauFinalStandard(data, dataMappage) {
         ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
+    console.log(data[0]);
     // suppression de la 1ère lignes de titres
     data.splice(0, 1);
 
-    var dataExport = data; //.map(row => row.map(d => pointToComma_FR(d)));
+    var dataExport = data;
     dataExport.unshift(headersStandard);
 
     setTimeout(() => {
@@ -1670,18 +1664,22 @@ function tableauFinalStandard(data, dataMappage) {
     }, 100);
 }
 $(() => {
-    // document.getElementById('deselectAll-rows').dataset.intro = "désélectionne toutes les lignes sélétionnées (surlignées en bleu)";
-    // document.getElementById('showAll-coll').dataset.step = 1; //"Affiche toutes les colonnes masquées";
-    // document.getElementById('hideAll-coll').dataset.step = 2; //"Masque toutes les colonnes telle qu'elles le sont au démarrage de l'application";
-
-    document.getElementById('guide-btn').onclick = function(e) {
+    document.getElementById('guide-btn').onclick = function (e) {
 
         var content_filterField = 'Liste déroulante à 2 fonctions:';
         content_filterField += '<ol><li>Permet de sélectionner une colonne pour l\'afficher ou la masquer (comme vu précédemment)</li>';
-        content_filterField += '<li></li>Applique un filtre "général" sur le tableau en fonction de la colonne sélectionnée</li></ol>';
+        content_filterField += '<li>Applique un filtre sur l\'ensemble du tableau en fonction de la colonne sélectionnée</li></ol>';
+        content_filterField += '<p><i class="fas fa-info-circle"></i> Dans le cas du filtre, vous pouvez appliquer un double filtre sur l\'ensemble du tableau ';
+        content_filterField += 'en sélectionnant la colonne "Cohort Name" dans cette liste avec par exemple l\'opérateur != {vide} pour avoir les cohortes "non vide"'
+        content_filterField += ' ou par = {vide} pour les sans cohortes et ensuite appliquer un second filtre sur l\'entête de la colonne "Grade TC" pour trouver les valeurs >="</p>';
+
         var content_groupByInput = 'Case de saisie à 2 fonctions (regrouper les lignes du tableau par entête.s de colonnes):';
         content_groupByInput += '<ol><li>Saisie automatique "indirecte" par un CLIC DROIT successivement sur un ou plusieurs entêtes de colonne</li>';
-        content_groupByInput += '<li>Saisie manuelle d\'un entête de colonne à la condition que le texte saisi soit identique y compris la casse</li></ol>'
+        content_groupByInput += '<li>Saisie manuelle d\'un entête de colonne à la condition que le texte saisi soit identique y compris la casse</li></ol>';
+
+        var content_filterHeader = 'Filtre dynamique à 2 possibiltés:';
+        content_filterHeader += '<ol><li> ... saisir des caractères alphanumériques, filtrage des données en temps réel en fonction de la saisie</li>';
+        content_filterHeader += '<li> >= chiffre seulement par saisie directe ou en utilisant les flèches (à droite) pour incrémenter ou décrémenter</li></ol>';
 
         var intro = introJs();
         intro.setOptions({
@@ -1776,7 +1774,7 @@ $(() => {
                 },
                 {
                     element: '.tabulator-header-filter',
-                    intro: 'Filtre dynamique (sans opérateur)',
+                    intro: content_filterHeader,
                     position: 'top'
                 },
                 {
@@ -1786,42 +1784,30 @@ $(() => {
                 },
                 {
                     element: '.tabulator-footer',
-                    intro: 'Divers indicateurs actualisés en temps réel',
+                    intro: 'Divers indicateurs actualisés en temps réel (aucune action requise)',
                     position: 'top'
                 }
             ],
-            hints: [
-                // {
-                //     element: document.querySelector('#step1'),
-                //     hint: "This is a tooltip.",
-                //     hintPosition: 'top-middle'
-                // },
-                {
-                    element: '.tabulator-header-filter',
-                    hint: 'More features, more fun.',
-                    position: 'left'
-                }
-            ]
+            hints: [{
+                element: '#checkFiles-btn',
+                hint: 'Si erreur dans l\'ordre des fichiers, un bouton clignotant apparaît qui permet de télécharger la liste des lignes concernées',
+                position: 'top'
+            }]
         });
-        intro.oncomplete(function() {
+        intro.oncomplete(function () {
             // intro.addHints();
         });
-        intro.onexit(function() {;
+        intro.onexit(function () {
+            ;
         });
-        intro.onchange(function(targetElement) {; //add change bits here
+        intro.onchange(function (targetElement) {
+            ;
         });
-        intro.onafterchange(function(targetElement) {
-            // console.log(targetElement.id);
-            // switch (targetElement.id) {
-            //     case "filter-value":
-            //         intro.addHints();
-            //         intro.exit();
-            //         break;
-            //     default:
-            //         break;
-            // }
+        intro.onafterchange(function (targetElement) {
+            ;
         });
-        intro.onbeforechange(function(targetElement) {; // add change bits here
+        intro.onbeforechange(function (targetElement) {
+            ;
         });
 
         intro.start();

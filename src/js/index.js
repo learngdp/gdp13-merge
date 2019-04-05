@@ -1,12 +1,10 @@
 console.log(lang, locale);
 // moment.locale(locale);
-var timeProcess;
 
 var allHeaders = [];
 var filesNb = 0;
 
 fileInput.onchange = function (e) {
-    timeProcess = new Date();
     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
     this.disabled = true;
 
@@ -17,44 +15,31 @@ fileInput.onchange = function (e) {
         y = regexFileNamesTemplate.test(y.name) ? y.name.match(regexFileNamesTemplate)[0] : y.name;
         return fileNamesTemplate[x] - fileNamesTemplate[y];
     });
-    // var filesNames = files.map(file => file.name);
-    // var testFiles = findFilesDuplicates(fileNames);
-    // console.log(testFiles);
-    // document.getElementById('dataTable-infos').innerHTML = menuColorHTML(files, [], 0);
 
     var totalSize = files.map(file => file.size).reduce((a, b) => a += b);
 
     let promises = [];
+    let fileNames = [];
     for (var i = 0, lgi = files.length; i < lgi; i++) {
-        promises.push(getDataFiles(files[i]));
+        promises.push(getDataFiles(files[i], fileNames));
     }
-    // console.log(promises);
 
     Promise.all(promises)
         .then(function (data) {
             let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
-            setTimeout(() => {
-                // console.log(data, uniqueHeaders, totalSize);
-                tableForFiles(data, uniqueHeaders)
-                // $('.fa-arrow-alt-circle-right').addClass('blink');
-            }, 10);
+            tableForFiles(data, uniqueHeaders)
 
         })
         .catch(function (error) {
             console.log(error);
             prettyDefaultReload("Information erreur", "Oups! " + error, "warning");
         });
-    console.log("timeProcess: " + (new Date() - timeProcess) + "ms");
 }
 
-// *** voir pour mettre ici le typed js *** pour beaucoup de fichiers
-function getDataFiles(file) {
-    // var delimiter = document.getElementById('delimiter-input').value;
-    // console.log(delimiter);
+function getDataFiles(file, fileNames) {
     return new Promise(function (resolve, reject) {
         var reader = new FileReader();
         reader.onload = (event) => {
-            // console.log(event);
             var textFromFileLoaded = event.target.result;
             let dataByFile = {},
                 flag;
@@ -62,7 +47,7 @@ function getDataFiles(file) {
                 header: true,
                 dynamicTyping: true,
                 // delimiter: delimiter ? delimiter[0] : "",
-                skipEmptyLines: true, // 'greedy',
+                skipEmptyLines: true,
                 chunk: function (results, parser) {
                     flag = checkHeaders(results.meta.fields, file);
                     if (flag) {
@@ -74,21 +59,21 @@ function getDataFiles(file) {
                     }
                 },
                 complete: function (results) {
-                    console.log('done! ', file.name, (new Date() - timeProcess) + "ms")
+                    if (fileNames.indexOf(file.name) !== -1)
+                        prettyDefaultReload("Information doublons", "Oups! Apparement au moins 1 doublons dans la sélection... " + file.name, "warning");
+                    fileNames.push(file.name);
                 }
             });
         };
         reader.onprogress = (event) => {
-            // updateIndicators(event.loaded, filesNb, 0, 0)
+            ;
         };
         reader.readAsText(file, "UTF-8");
         filesNb++;
     });
-    console.log("getDataFiles: " + (new Date() - timeProcess) + "ms");
 }
 
 function flatData(dataFiles, uniqueHeaders) {
-    console.log("flatData: " + (new Date() - timeProcess) + "ms");
     return new Promise(function (resolve) {
         var dataSelected = [],
             flat = [];
@@ -102,7 +87,6 @@ function flatData(dataFiles, uniqueHeaders) {
                 }));
             });
         } else {
-            // console.log(Object.keys(dataFiles[0])[0]);
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
                     obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
@@ -111,7 +95,7 @@ function flatData(dataFiles, uniqueHeaders) {
         }
 
         var arrConcatened = [].concat(...dataSelected);
-        // also allow to get unique headers
+
         var headersTemplate = {};
         uniqueHeaders.forEach((el, i) => {
             headersTemplate[el] = "";
@@ -138,35 +122,30 @@ function flatData(dataFiles, uniqueHeaders) {
 
         dataMerged = checkWrongID(dataMerged);
 
-        // console.log(dataMerged);
-
-        var getDataMappage = function(result) {
+        var getDataMappage = function (result) {
             var delimiter = Papa.parse(result).meta.delimiter;
-            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function(d) {
-                // ( d["Student ID"] != undefined && /^(\r\n|\r|\n)$/.test(d["Student ID"].toString()) )
-                // console.log(d[0], /^(\r\n|\r|\n)$/.test(d[0]));
+            var dataResult = d3.dsvFormat(delimiter).parseRows(result, function (d) {
                 if (d && d !== undefined && d[0].length !== 0) return d;
             }).sort((a, b) => a[0] - b[0]);
             var dataMappage = d3.csvParse(Papa.unparse(dataResult));
-            // console.log(data.flat, dataMappage);
+
             if (dataResult !== undefined && checkProfile(dataResult)) {
-                resolve({ flat: dataMerged , dataMappage: dataMappage });
-                // setTimeout(() => launchDataMappage(data.flat, dataMappage), 500);
+                resolve({
+                    flat: dataMerged,
+                    dataMappage: dataMappage
+                });
             }
         }
 
-        document.getElementById('fileInputMappage').onchange = function(e) {
+        document.getElementById('fileInputMappage').onchange = function (e) {
             this.disabled = true;
-            // console.log(document.getElementById('profil_info-div').childNodes);
-            // document.getElementById('profil_info-div').childNodes[3].classList.replace('labelProfile', 'normal');
-            // $('.fa-arrow-alt-circle-right').removeClass('blink');
-            document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             document.getElementById('profil_info-div').classList.replace("inline", "hidden");
+            document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
             var file = this.files[0];
             var reader = new FileReader();
-            reader.onprogress = function(event) {}
-            reader.onloadend = function(event) {}
-            reader.onload = function(event) {
+            reader.onprogress = function (event) {};
+            reader.onloadend = function (event) {};
+            reader.onload = function (event) {
                 getDataMappage(reader.result);
             }
             reader.readAsText(file);
@@ -175,17 +154,14 @@ function flatData(dataFiles, uniqueHeaders) {
 }
 
 function tableForFiles(dataFiles, uniqueHeaders) {
-    // console.log(data, uniqueHeaders);
-    // *** check doublons avant de continuer
-    // fin de check doublons***
     document.getElementById('grade_report-div').classList.replace("inline", "hidden");
     document.getElementById('profil_info-div').classList.replace("hidden", "inline");
     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-
     flatData(dataFiles, uniqueHeaders)
         .then(function (data) {
             var flat = d3.csvParse(Papa.unparse(data.flat));
             var dataMappage = data.dataMappage;
+
             var jsonData = flat.map(function (obj, i) {
                 var username;
                 if (obj["Username"] && obj["Username"] !== undefined) {
@@ -198,22 +174,13 @@ function tableForFiles(dataFiles, uniqueHeaders) {
                 if (resultId === undefined) {
                     obj["Name"] = "Absent sur profile_info";
                 } else {
-                    // console.log(resultId.year_of_birth, resultId.gender);
                     obj["Name"] = resultId.name;
                     obj["year_of_birth"] = (resultId.year_of_birth) ? resultId.year_of_birth : "";
-                    // obj["gender"] = (resultId.gender) ? resultId.gender : "";
-                    // obj["level_of_education"] = (resultId.level_of_education) ? resultId.level_of_education : "";
                 }
                 return sortObjectKeys(obj, headersTemplate);
             });
+            globalReport(jsonData, dataMappage);
 
-            var flag = false;
-            setTimeout(() => {
-                flag = globalReport(jsonData, dataMappage); // launchTab(d3.csvParse(Papa.unparse(jsonData)));
-                if (flag) {
-                    console.log("tabulator launch !" + (new Date() - timeProcess) + "ms");
-                }
-            }, 10);
         }).catch(function (error) {
             console.log(error);
             swal({
@@ -225,19 +192,14 @@ function tableForFiles(dataFiles, uniqueHeaders) {
 }
 
 /* HELPERS imported files */
-
 function mergedDataTest(headers, data) {
     var selected = document.getElementById('filter-field').value;
 
-    // headers.splice(headers.length-1, 1, "fichiers fusionnés");
     headers.push("fichiers fusionnés");
-
-    // console.log(headers, data);
+    headers.push("Grade_TC");
 
     var jsonData = d3.csvParse(Papa.unparse(data));
-    // console.log(jsonData);
 
-    // also allow to get unique headers
     var headersTemplate = {};
     headers.forEach((el, i) => {
         headersTemplate[el] = "";
@@ -247,9 +209,7 @@ function mergedDataTest(headers, data) {
     var nestedData = d3.nest()
         .key(d => d["Student ID"])
         .rollup(v => {
-            var arr = v.map(obj => [].concat.call([], Object.values(obj))); // v.map(obj => [].concat.apply([], Object.values(obj)));
-            // voir pour remplacer les expresions nécessaires avec la ligne de dessous
-            // [...new Set([].concat(...data.map(obj => obj["headers"])))]
+            var arr = v.map(obj => [].concat.call([], Object.values(obj)));
             arr.unshift(headers);
             return {
                 arr: arr
@@ -257,17 +217,16 @@ function mergedDataTest(headers, data) {
         })
         .entries(jsonData);
 
-    // console.log(nestedData);
-
     for (var i = 0, lgi = nestedData.length; i < lgi; i++) {
         var item = nestedData[i],
-            // key = item.key,
             values = item.value.arr;
-        // console.log(values);
-        var obj = {};
+        var obj = {},
+            uniqueValues;
         headers.forEach((key, i) => {
-            if (key == "Grade" || key == "Enrollment Track" || key == "Enrollment Status" || key == "fichiers fusionnés") {
+            if (key === "Grade" || key === "Enrollment Track" || key === "Enrollment Status" || key === "fichiers fusionnés" || key === "Grade_TC") {
                 obj[key] = dataByColumn(values.slice(1, values.length), i);
+                (obj["fichiers fusionnés"] !== undefined && obj["fichiers fusionnés"].length > 0 && obj["fichiers fusionnés"][0] === "TC") ?
+                obj["Grade_TC"] = obj["Grade"][0]: obj["Grade_TC"] = "";
             } else {
                 obj[key] = [...new Set(dataByColumn(values.slice(1, values.length), i))];
             }
@@ -276,21 +235,19 @@ function mergedDataTest(headers, data) {
     }
 
     var dataMerged = d3.csvParseRows(Papa.unparse(merged));
-    // console.log(dataMerged);
 
     return dataMerged;
 }
 
 function dataByColumn(arr, col) {
-    // console.log(arr, col);
     var column = [],
         value;
     for (var i = 0, lgi = arr.length; i < lgi; i++) {
         value = arr[i][col];
         column.push(value);
     }
-    return filter_array(column); // voir avec _.compact
-} 
+    return filter_array(column);
+}
 
 // classe en fonction dans modèles ici headersTemplate
 function sortObjectKeys(obj, keys) {
@@ -305,7 +262,6 @@ function checkHeaders(headers, file) {
     var flag;
     headers.forEach(function (title, i) {
         var headersElement = headersTemplate[headersTemplate.indexOf(title.trim())];
-        // console.log(title, title == title.trim(), headersElement, headersTemplate.indexOf(title.trim()));
         if (headersTemplate.indexOf(title.trim()) === -1) {
             var html = document.createElement("div");
             var p = document.createElement("p");
@@ -327,7 +283,6 @@ function checkHeaders(headers, file) {
 }
 
 function checkProfile(data) {
-    console.time("import");
     var flag = true;
     data[0].slice(0, 4).forEach(el => {
         if (headersProfile.indexOf(el) === -1) flag = false;
@@ -344,31 +299,4 @@ function checkProfile(data) {
             document.getElementById('fileInputMappage').disabled = false;
         });
     return flag;
-}
-
-function findFilesDuplicates(fileNames) {
-    return new Promise(function (resolve, reject) {
-        var gradesImported = [];
-        filesNames.map(name => {
-            if (name.match(regexAll)) return name.match(regexAll);
-        }).forEach(reg => {
-            if (reg !== undefined) gradesImported.push(reg[1]);
-        });
-        var duplicates = find_duplicate_in_array(gradesImported);
-        console.log(duplicates);
-        var html = document.createElement("div"),
-            p = document.createElement("p");
-        p.innerHTML = duplicates.join();
-        html.appendChild(p);
-        if (duplicates.length > 0) {
-            prettyDefault(
-                "Information fichiers importés",
-                "Oups ! Apparemment 1 ou plusieurs fichiers importés sont en doublons.\nVeuillez rafraichir la page de votre navigateur... ",
-                html, "warning");
-            document.getElementById('fileInputMappage').disabled = true;
-            resolve(false);
-        } else {
-            resolve(true);
-        }
-    })
 }

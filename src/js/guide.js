@@ -1,16 +1,20 @@
 $(() => {
-    // document.getElementById('deselectAll-rows').dataset.intro = "désélectionne toutes les lignes sélétionnées (surlignées en bleu)";
-    // document.getElementById('showAll-coll').dataset.step = 1; //"Affiche toutes les colonnes masquées";
-    // document.getElementById('hideAll-coll').dataset.step = 2; //"Masque toutes les colonnes telle qu'elles le sont au démarrage de l'application";
-
-    document.getElementById('guide-btn').onclick = function(e) {
+    document.getElementById('guide-btn').onclick = function (e) {
 
         var content_filterField = 'Liste déroulante à 2 fonctions:';
         content_filterField += '<ol><li>Permet de sélectionner une colonne pour l\'afficher ou la masquer (comme vu précédemment)</li>';
-        content_filterField += '<li></li>Applique un filtre "général" sur le tableau en fonction de la colonne sélectionnée</li></ol>';
+        content_filterField += '<li>Applique un filtre sur l\'ensemble du tableau en fonction de la colonne sélectionnée</li></ol>';
+        content_filterField += '<p><i class="fas fa-info-circle"></i> Dans le cas du filtre, vous pouvez appliquer un double filtre sur l\'ensemble du tableau ';
+        content_filterField += 'en sélectionnant la colonne "Cohort Name" dans cette liste avec par exemple l\'opérateur != {vide} pour avoir les cohortes "non vide"'
+        content_filterField += ' ou par = {vide} pour les sans cohortes et ensuite appliquer un second filtre sur l\'entête de la colonne "Grade TC" pour trouver les valeurs >="</p>';
+
         var content_groupByInput = 'Case de saisie à 2 fonctions (regrouper les lignes du tableau par entête.s de colonnes):';
         content_groupByInput += '<ol><li>Saisie automatique "indirecte" par un CLIC DROIT successivement sur un ou plusieurs entêtes de colonne</li>';
-        content_groupByInput += '<li>Saisie manuelle d\'un entête de colonne à la condition que le texte saisi soit identique y compris la casse</li></ol>'
+        content_groupByInput += '<li>Saisie manuelle d\'un entête de colonne à la condition que le texte saisi soit identique y compris la casse</li></ol>';
+
+        var content_filterHeader = 'Filtre dynamique à 2 possibiltés:';
+        content_filterHeader += '<ol><li> ... saisir des caractères alphanumériques, filtrage des données en temps réel en fonction de la saisie</li>';
+        content_filterHeader += '<li> >= chiffre seulement par saisie directe ou en utilisant les flèches (à droite) pour incrémenter ou décrémenter</li></ol>';
 
         var intro = introJs();
         intro.setOptions({
@@ -105,7 +109,7 @@ $(() => {
                 },
                 {
                     element: '.tabulator-header-filter',
-                    intro: 'Filtre dynamique (sans opérateur)',
+                    intro: content_filterHeader,
                     position: 'top'
                 },
                 {
@@ -115,42 +119,30 @@ $(() => {
                 },
                 {
                     element: '.tabulator-footer',
-                    intro: 'Divers indicateurs actualisés en temps réel',
+                    intro: 'Divers indicateurs actualisés en temps réel (aucune action requise)',
                     position: 'top'
                 }
             ],
-            hints: [
-                // {
-                //     element: document.querySelector('#step1'),
-                //     hint: "This is a tooltip.",
-                //     hintPosition: 'top-middle'
-                // },
-                {
-                    element: '.tabulator-header-filter',
-                    hint: 'More features, more fun.',
-                    position: 'left'
-                }
-            ]
+            hints: [{
+                element: '#checkFiles-btn',
+                hint: 'Si erreur dans l\'ordre des fichiers, un bouton clignotant apparaît qui permet de télécharger la liste des lignes concernées',
+                position: 'top'
+            }]
         });
-        intro.oncomplete(function() {
+        intro.oncomplete(function () {
             // intro.addHints();
         });
-        intro.onexit(function() {;
+        intro.onexit(function () {
+            ;
         });
-        intro.onchange(function(targetElement) {; //add change bits here
+        intro.onchange(function (targetElement) {
+            ;
         });
-        intro.onafterchange(function(targetElement) {
-            // console.log(targetElement.id);
-            // switch (targetElement.id) {
-            //     case "filter-value":
-            //         intro.addHints();
-            //         intro.exit();
-            //         break;
-            //     default:
-            //         break;
-            // }
+        intro.onafterchange(function (targetElement) {
+            ;
         });
-        intro.onbeforechange(function(targetElement) {; // add change bits here
+        intro.onbeforechange(function (targetElement) {
+            ;
         });
 
         intro.start();
