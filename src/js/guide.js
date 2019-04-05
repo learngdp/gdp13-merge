@@ -73,6 +73,11 @@ $(() => {
                     position: 'top'
                 },
                 {
+                    element: '#filtersHeader-clear',
+                    intro: 'Efface tous les filtres en entête de colonne',
+                    position: 'top'
+                },
+                {
                     element: '#groupBy-input',
                     intro: content_groupByInput,
                     position: 'top'

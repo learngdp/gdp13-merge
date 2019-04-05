@@ -1265,6 +1265,10 @@ function launchTab(jsonFromCSV, absences) {
         table.clearFilter();
     });
 
+    document.getElementById('filtersHeader-clear').onclick = function(e) {
+        table.clearHeaderFilter();
+    }
+
     document.getElementById('groupBy-btn').onclick = function(e) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [],
@@ -1735,6 +1739,11 @@ $(() => {
                 {
                     element: '#filter-clear',
                     intro: 'Efface le filtre et réinitialise la liste déroulante et le type de filtre sur les éléments ci-contre (à gauche)',
+                    position: 'top'
+                },
+                {
+                    element: '#filtersHeader-clear',
+                    intro: 'Efface tous les filtres en entête de colonne',
                     position: 'top'
                 },
                 {

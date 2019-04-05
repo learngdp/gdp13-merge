@@ -181,6 +181,10 @@ function launchTab(jsonFromCSV, absences) {
         table.clearFilter();
     });
 
+    document.getElementById('filtersHeader-clear').onclick = function(e) {
+        table.clearHeaderFilter();
+    }
+
     document.getElementById('groupBy-btn').onclick = function(e) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [],
