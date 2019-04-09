@@ -318,6 +318,7 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+                    document.getElementById('filesNumber').classList.add('hidden');
                     document.getElementById('guide-btn').classList.remove('hidden');
                 })
                 .catch(function (error) {
@@ -326,6 +327,7 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
         }, timer);
     } else {
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        document.getElementById('filesNumber').classList.add('hidden');
         document.getElementById('guide-btn').classList.remove('hidden');
         console.log('table done!');
     }

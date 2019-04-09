@@ -26,9 +26,14 @@ fileInput.onchange = function (e) {
 
     Promise.all(promises)
         .then(function (data) {
-            let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
-            tableForFiles(data, uniqueHeaders)
-
+            if (fileNames.length <= 17) {
+                document.getElementById('filesNumber').classList.remove('hidden');
+                document.getElementById('filesNumber').innerHTML = fileNames.length;
+                let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
+                tableForFiles(data, uniqueHeaders);
+            } else {
+                prettyDefaultReload("Information nombre fichiers", "Apparemment, il y a plus de 17 fichiers importés...", "warning");
+            }
         })
         .catch(function (error) {
             console.log(error);
@@ -41,6 +46,9 @@ function getDataFiles(file, fileNames) {
         var reader = new FileReader();
         reader.onload = (event) => {
             var textFromFileLoaded = event.target.result;
+            var charset = jschardet.detect(textFromFileLoaded);
+            if (regexAllSPE.test(file.name))
+                console.log(file.name.match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, ""), " => ", charset.encoding);
             let dataByFile = {},
                 flag;
             Papa.parse(textFromFileLoaded, {

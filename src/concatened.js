@@ -17,6 +17,7 @@ import 'intro.js/introjs.css';
 
 
 // import $ from 'jquery';
+var jschardet = require("jschardet");
 
 var Tabulator = require('tabulator-tables');
 
@@ -86,9 +87,14 @@ fileInput.onchange = function (e) {
 
     Promise.all(promises)
         .then(function (data) {
-            let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
-            tableForFiles(data, uniqueHeaders)
-
+            if (fileNames.length <= 17) {
+                document.getElementById('filesNumber').classList.remove('hidden');
+                document.getElementById('filesNumber').innerHTML = fileNames.length;
+                let uniqueHeaders = [...new Set([].concat(...data.map(obj => obj["headers"])))];
+                tableForFiles(data, uniqueHeaders);
+            } else {
+                prettyDefaultReload("Information nombre fichiers", "Apparemment, il y a plus de 17 fichiers importés...", "warning");
+            }
         })
         .catch(function (error) {
             console.log(error);
@@ -101,6 +107,9 @@ function getDataFiles(file, fileNames) {
         var reader = new FileReader();
         reader.onload = (event) => {
             var textFromFileLoaded = event.target.result;
+            var charset = jschardet.detect(textFromFileLoaded);
+            if (regexAllSPE.test(file.name))
+                console.log(file.name.match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, ""), " => ", charset.encoding);
             let dataByFile = {},
                 flag;
             Papa.parse(textFromFileLoaded, {
@@ -852,6 +861,7 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
                     document.getElementById('rowsTotal').innerHTML = data.length;
                     console.log('replaceData done!');
                     document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+                    document.getElementById('filesNumber').classList.add('hidden');
                     document.getElementById('guide-btn').classList.remove('hidden');
                 })
                 .catch(function (error) {
@@ -860,6 +870,7 @@ function replaceDataAfterLoaded(table, data, diff, timer) {
         }, timer);
     } else {
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        document.getElementById('filesNumber').classList.add('hidden');
         document.getElementById('guide-btn').classList.remove('hidden');
         console.log('table done!');
     }
@@ -1135,11 +1146,11 @@ function globalReport(jsonData, dataMappage) {
         if (row[3] === "Absent sur profile_info")
             absences++;
 
-        if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
-            checkFiles.push([row[0], row[39]]);
-        } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length-1] !== 'PA') {
-            checkFiles.push([row[0], row[39]]);
-        }
+            if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
+                checkFiles.push([row[0], row[39]]);
+            } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length - 1] !== 'PA') {
+                checkFiles.push([row[0], row[39]]);
+            }
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 

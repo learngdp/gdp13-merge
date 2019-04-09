@@ -17,6 +17,7 @@ import 'intro.js/introjs.css';
 
 
 // import $ from 'jquery';
+var jschardet = require("jschardet");
 
 var Tabulator = require('tabulator-tables');
 

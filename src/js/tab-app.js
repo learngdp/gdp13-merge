@@ -51,11 +51,11 @@ function globalReport(jsonData, dataMappage) {
         if (row[3] === "Absent sur profile_info")
             absences++;
 
-        if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
-            checkFiles.push([row[0], row[39]]);
-        } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length-1] !== 'PA') {
-            checkFiles.push([row[0], row[39]]);
-        }
+            if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
+                checkFiles.push([row[0], row[39]]);
+            } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length - 1] !== 'PA') {
+                checkFiles.push([row[0], row[39]]);
+            }
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 
