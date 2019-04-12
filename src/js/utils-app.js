@@ -242,7 +242,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i > 18 && i < 39) {
+        } else if (i > 18 && i <= 38) {
             columns.push({
                 id: i,
                 title: name,
@@ -257,12 +257,12 @@ function setDataColumns(headersColumns) {
                     max: 1,
                     step: 0.01
                 },
-                headerContext: function (e, column) {
+                headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (i > 39 && i < 44) {
+        } else if (i > 38 && i < 45) {
             columns.push({
                 id: i,
                 title: name,
@@ -270,7 +270,7 @@ function setDataColumns(headersColumns) {
                 visible: false,
                 headerFilter: "input",
                 headerFilterPlaceholder: "...",
-                headerContext: function (e, column) {
+                headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }

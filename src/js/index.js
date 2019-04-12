@@ -1,6 +1,3 @@
-console.log(lang, locale);
-// moment.locale(locale);
-
 var allHeaders = [];
 var filesNb = 0;
 

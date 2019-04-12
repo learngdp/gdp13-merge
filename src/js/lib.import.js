@@ -1,7 +1,3 @@
-// const lang = navigator.language; // "de_DE"; // "en_US"; //
-// const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
-console.log(lang, locale);
-
 document.addEventListener('touchstart', function addtouchclass(e) { // first time user touches the screen
     document.documentElement.classList.add('can-touch') // add "can-touch" class to document root using classList API
     document.removeEventListener('touchstart', addtouchclass, false) // de-register touchstart event

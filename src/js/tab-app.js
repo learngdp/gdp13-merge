@@ -120,6 +120,18 @@ function globalReport(jsonData, dataMappage) {
         tableauFinalStandard(dataFromCSV, dataMappage);
     }
 
+    document.getElementById('exportCSVComma-btn').onclick = function(e) {
+        var dataExport = [];
+        console.log(data);
+        data.forEach((row, i) => {
+            var row = row.slice(0, 38);
+            if ( i !== 0)
+                row = row.map(d => pointToComma_FR(d));
+            dataExport.push(row);
+        });
+        exportCSVDefault(dataExport, "global_reportTC");
+    }
+
     // *** EXTRA COHORTES
     buttonCohortes.onclick = function(e) {
         var selected = document.getElementById('selectCohortes-btn').value;
@@ -140,7 +152,7 @@ function launchTab(jsonFromCSV, absences) {
 
     var data = jsonFromCSV.length > 1000 ? jsonFromCSV.slice(0, 1000) : jsonFromCSV.slice(0, jsonFromCSV.length);
     var diff = jsonFromCSV.slice(0, jsonFromCSV.length).length - data.length;
-    var headers = jsonFromCSV.columns; 
+    var headers = jsonFromCSV.columns;
 
     // fill select element after load
     fillOptionsSelect(headers);
@@ -240,6 +252,21 @@ function launchTab(jsonFromCSV, absences) {
                 table.hideColumn(header);
             });
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
+            table.redraw();
+        }, 10)
+    }
+
+    document.getElementById('showConcat-col').onclick = function() {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        var headersColumnsConcat = ["Grade", "Enrollment Track", "Verification Status", "Enrollment Status"];
+        setTimeout(() => {
+            headersColumnsConcat.forEach(header => {
+                table.showColumn(header);
+            });
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            this.firstChild.classList.replace("fa-grip-lines-vertical", "fa-grip-lines");
+            table.redraw();
         }, 10)
     }
 

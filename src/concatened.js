@@ -1,7 +1,3 @@
-// const lang = navigator.language; // "de_DE"; // "en_US"; //
-// const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" || lang === "it" || lang === "nl") ? lang : "en";
-console.log(lang, locale);
-
 document.addEventListener('touchstart', function addtouchclass(e) { // first time user touches the screen
     document.documentElement.classList.add('can-touch') // add "can-touch" class to document root using classList API
     document.removeEventListener('touchstart', addtouchclass, false) // de-register touchstart event
@@ -59,8 +55,6 @@ dom.watch();
 window.addEventListener('load', function () {
     document.getElementById('main_div').style.display = 'block';
 })
-console.log(lang, locale);
-// moment.locale(locale);
 
 var allHeaders = [];
 var filesNb = 0;
@@ -369,6 +363,7 @@ function checkProfile(data) {
         });
     return flag;
 }
+
 /* IMPORTANT: la position des titres dans le tableau (headers) est à respecter car repris dans les sorties analytics et standard */
 /* par contre... aucune incidence sur l'emplacement des colonnes des fichiers csv import en entrée (en principe;) */
 // MERGE
@@ -382,7 +377,7 @@ const headersTemplate = [
     "Name",
     "Username",
     "Cohort Name",
-    "Grade",
+    "Pre MOOC", // 32 à la place de Grade
     "Évaluation Hebdo 1: Évaluation (notée)", // 7
     "Évaluation Hebdo 2: Évaluation (notée)",
     "Évaluation Hebdo 3: Évaluation (notée)",
@@ -408,7 +403,7 @@ const headersTemplate = [
     "TRIZ - Introduction aux principaux outils de TRIZ", // 29 -SPE 13
     "G2C - Gestion de crise", // 30 - SPE 14
     "PAE - Du Projet à l'Action Entrepreneuriale", // 31 - SPE 15
-    "Pre MOOC", // 32
+    "Grade", // 6 à la place de Preemooc
     "Enrollment Track", // 33
     "Verification Status",
     "Certificate Eligible",
@@ -785,7 +780,7 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i > 18 && i < 39) {
+        } else if (i > 18 && i <= 38) {
             columns.push({
                 id: i,
                 title: name,
@@ -800,12 +795,12 @@ function setDataColumns(headersColumns) {
                     max: 1,
                     step: 0.01
                 },
-                headerContext: function (e, column) {
+                headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
             });
-        } else if (i > 39 && i < 44) {
+        } else if (i > 38 && i < 45) {
             columns.push({
                 id: i,
                 title: name,
@@ -813,7 +808,7 @@ function setDataColumns(headersColumns) {
                 visible: false,
                 headerFilter: "input",
                 headerFilterPlaceholder: "...",
-                headerContext: function (e, column) {
+                headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -1093,6 +1088,7 @@ function createTableExtra(data, headers, className, text, extraTitle) {
         });
     return true;
 }
+
 function globalReport(jsonData, dataMappage) {
     var dataFromCSV = d3.csvParseRows(Papa.unparse(jsonData));
 
@@ -1215,6 +1211,18 @@ function globalReport(jsonData, dataMappage) {
         tableauFinalStandard(dataFromCSV, dataMappage);
     }
 
+    document.getElementById('exportCSVComma-btn').onclick = function(e) {
+        var dataExport = [];
+        console.log(data);
+        data.forEach((row, i) => {
+            var row = row.slice(0, 38);
+            if ( i !== 0)
+                row = row.map(d => pointToComma_FR(d));
+            dataExport.push(row);
+        });
+        exportCSVDefault(dataExport, "global_reportTC");
+    }
+
     // *** EXTRA COHORTES
     buttonCohortes.onclick = function(e) {
         var selected = document.getElementById('selectCohortes-btn').value;
@@ -1235,7 +1243,7 @@ function launchTab(jsonFromCSV, absences) {
 
     var data = jsonFromCSV.length > 1000 ? jsonFromCSV.slice(0, 1000) : jsonFromCSV.slice(0, jsonFromCSV.length);
     var diff = jsonFromCSV.slice(0, jsonFromCSV.length).length - data.length;
-    var headers = jsonFromCSV.columns; 
+    var headers = jsonFromCSV.columns;
 
     // fill select element after load
     fillOptionsSelect(headers);
@@ -1335,6 +1343,21 @@ function launchTab(jsonFromCSV, absences) {
                 table.hideColumn(header);
             });
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
+            table.redraw();
+        }, 10)
+    }
+
+    document.getElementById('showConcat-col').onclick = function() {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        var headersColumnsConcat = ["Grade", "Enrollment Track", "Verification Status", "Enrollment Status"];
+        setTimeout(() => {
+            headersColumnsConcat.forEach(header => {
+                table.showColumn(header);
+            });
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            this.firstChild.classList.replace("fa-grip-lines-vertical", "fa-grip-lines");
+            table.redraw();
         }, 10)
     }
 
@@ -1712,14 +1735,20 @@ $(() => {
                     element: '#deselectAll-rows',
                     intro: 'Désélectionne toutes les lignes sélectionnées (surlignées en bleu dans le tableau)',
                     position: 'top'
-                }, {
+                },
+                {
+                    element: '#showConcat-col',
+                    intro: 'Affiche les colonnes concaténées "Grade", "Enrollment Track", "Verification Status", "Enrollment Status"',
+                    position: 'top'
+                },
+                {
                     element: '#showAll-coll',
                     intro: 'Affiche toutes les colonnes',
                     position: 'top'
                 },
                 {
                     element: '#hideAll-coll',
-                    intro: 'Masque toutes les colonnes qui sont masquées au démarrage de l\'application',
+                    intro: 'Affiche ou masque les colonnes telles qu\'elles le sont au démarrage de l\'application',
                     position: 'top'
                 },
                 {
@@ -1788,8 +1817,13 @@ $(() => {
                     position: 'top'
                 },
                 {
+                    element: '#exportCSVComma-btn',
+                    intro: 'Export CSV des données (décimales en virgule).<br>Toutes les colonnes et lignes (visibles ou pas) sont pris en compte à l\'exception des colonnes "concaténées".',
+                    position: 'top'
+                },
+                {
                     element: '#exportCSV-btn',
-                    intro: 'Export CSV des données filtrées. Seules les lignes et les colonnes visibles sont pris en compte dans le fichier de sortie',
+                    intro: 'Export CSV des données filtrées (décimales en point).<br>Seules les lignes et les colonnes visibles dans le tableau sont pris en compte dans le fichier de sortie',
                     position: 'top'
                 },
                 {

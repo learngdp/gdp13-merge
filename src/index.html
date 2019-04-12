@@ -5,26 +5,6 @@
     <title>GdP13 merge</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
-        const lang = navigator.language;
-        const locale = (lang && lang !== undefined) ? lang.match(/^\w{2}/)[0] : (lang === "de" || lang === "fr" ||
-            lang === "it" || lang === "nl") ? lang : "en";
-
-        function iOSversion() {
-            if (/iP(hone|od|ad)/.test(navigator.platform)) {
-                var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-                return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
-            }
-        }
-        var ver = iOSversion();
-        if (ver !== undefined && ver[0] <= 10) {
-            var message = (locale === 'fr') ?
-                '<p>Version ios 10 minimum requise pour utiliser cette application. <b>Version détectée ' + ver +
-                '</b></p>' :
-                '<p>Version ios 10 minimum to use this app. <b>Version détected ' + ver + '</b></p>';
-            document.write(message);
-        }
-    </script>
 </head>
 
 <body>
@@ -32,6 +12,8 @@
         <div>
             <div>
                 <button id="deselectAll-rows" class="mainButton small" title="aucune sélection"><i class="fas fa-table"></i></button>
+                <button id="showConcat-col" class="mainButton small" title="affiche les colonnes concaténées"><i class="fas fa-grip-lines-vertical"></i></button>
+
                 <button id="showAll-coll" class="mainButton small" title="afficher toutes les colonnes"><i class="far fa-eye"></i></button>
                 <button id="hideAll-coll" class="mainButton small" title="masquer les colonnes comme au démarrage"><i class="far fa-eye-slash"></i></button>
 
@@ -43,7 +25,7 @@
                 <input name="filter-value" class="small" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
                 <button id="filter-clear" class="small" title="effacer"><i class="fas fa-eraser"></i></button>
                 <button id="filtersHeader-clear" class="mainButton small" title="effacer tous les filtres d'entête"><i class="fas fa-eraser"></i></button>
-                
+
                 <input id="groupBy-input" class="small" type="text" style="width: 150px;margin-left: 2em" placeholder="clic droit sur entête.s" />
                 <button id="groupBy-btn" class="small" title="grouper par entête"><i class="fas fa-lock-open"></i></button>
                 <button id="degroupBy-btn" class="small" title="dégrouper" style="margin-right: 2em"><i class="fas fa-undo-alt"></i></button>
@@ -53,8 +35,10 @@
 
                 <button id="finalStandard-btn" class="mainButton small" style="margin-left:2em" title="export CSV - final standard">
                     <i class="fas fa-download"></i> Final standard</button>
-                <button id="exportCSV-btn" class="mainButton small" title="export CSV - grades fusionnés" style="margin-right: 2em">
-                    <i class="fas fa-download"></i> CSV <i class="far fa-eye"></i></button>
+                <button id="exportCSVComma-btn" class="mainButton small" title="export CSV - décimales (virgules)">
+                    <i class="fas fa-download"></i> CSV (,)</button>
+                <button id="exportCSV-btn" class="mainButton small" title="export CSV - décimales (point)" style="margin-left: 1em; margin-right: 2em">
+                    <i class="fas fa-download"></i> CSV (.)</button>
 
                 <span id="spinnerLoad-span" class="hidden" style="margin-left: 2em"><i class="fas fa-spinner fa-spin"></i></span>
                 <div id="mainMenu-div" style="float: right">

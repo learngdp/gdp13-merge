@@ -32,14 +32,20 @@ $(() => {
                     element: '#deselectAll-rows',
                     intro: 'Désélectionne toutes les lignes sélectionnées (surlignées en bleu dans le tableau)',
                     position: 'top'
-                }, {
+                },
+                {
+                    element: '#showConcat-col',
+                    intro: 'Affiche les colonnes concaténées "Grade", "Enrollment Track", "Verification Status", "Enrollment Status"',
+                    position: 'top'
+                },
+                {
                     element: '#showAll-coll',
                     intro: 'Affiche toutes les colonnes',
                     position: 'top'
                 },
                 {
                     element: '#hideAll-coll',
-                    intro: 'Masque toutes les colonnes qui sont masquées au démarrage de l\'application',
+                    intro: 'Affiche ou masque les colonnes telles qu\'elles le sont au démarrage de l\'application',
                     position: 'top'
                 },
                 {
@@ -108,8 +114,13 @@ $(() => {
                     position: 'top'
                 },
                 {
+                    element: '#exportCSVComma-btn',
+                    intro: 'Export CSV des données (décimales en virgule).<br>Toutes les colonnes et lignes (visibles ou pas) sont pris en compte à l\'exception des colonnes "concaténées".',
+                    position: 'top'
+                },
+                {
                     element: '#exportCSV-btn',
-                    intro: 'Export CSV des données filtrées. Seules les lignes et les colonnes visibles sont pris en compte dans le fichier de sortie',
+                    intro: 'Export CSV des données filtrées (décimales en point).<br>Seules les lignes et les colonnes visibles dans le tableau sont pris en compte dans le fichier de sortie',
                     position: 'top'
                 },
                 {
