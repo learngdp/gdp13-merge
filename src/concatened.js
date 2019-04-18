@@ -751,14 +751,9 @@ function setDataColumns(headersColumns) {
                 id: i,
                 title: name,
                 field: column,
-                headerFilter: "number",
-                headerFilterPlaceholder: ">=",
-                headerFilterFunc: ">=",
-                headerFilterParams: {
-                    min: 0,
-                    max: 15,
-                    step: 1
-                },
+                headerFilter: "input",
+                headerFilterPlaceholder: "> ou < ou =",
+                headerFilterFunc: customHeaderFilter,
                 headerContext: function (e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
@@ -844,6 +839,20 @@ function setDataColumns(headersColumns) {
         }
     })
     return columns;
+}
+
+function customHeaderFilter(headerValue, rowValue, rowData, filterParams) {
+    var accept = (value, motif) =>  value.replace(motif, "").trim();
+    if ( headerValue.indexOf(">") !== -1 ) {
+        return rowValue > accept(headerValue, ">");
+    } if ( headerValue.indexOf("<") !== -1 ) {
+        return rowValue < accept(headerValue, "<");
+    } if ( headerValue.indexOf("=") !== -1 ) {
+        return rowValue === accept(headerValue, "=");
+    } else {
+        return false
+    }
+    return  true;
 }
 
 function groupByField(field) {
