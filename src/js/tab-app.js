@@ -212,13 +212,23 @@ function launchTab(jsonFromCSV, absences) {
     }
 
     document.getElementById('hide-col').onclick = function() {
-        let columnName = document.getElementById('filter-field').value;
-        table.hideColumn(columnName);
+        var columnNames = [];
+        table.getColumns().forEach(column => {
+            if (column.getVisibility())
+                columnNames.push(column.getField());
+        });
+        createTableColumnsHide(["case", "colonnes"], columnNames, "pvtTable", table);
+        columnNames = null;
     }
 
     document.getElementById('show-col').onclick = function() {
-        let columnName = document.getElementById('filter-field').value;
-        table.showColumn(columnName);
+        var columnNames = [];
+        table.getColumns().forEach(column => {
+            if (!column.getVisibility())
+                columnNames.push(column.getField());
+        });
+        createTableColumnsShow(["case", "colonnes"], columnNames, "pvtTable", table);
+        columnNames = null;
     }
 
     document.getElementById('showAll-coll').onclick = function() {
@@ -303,6 +313,115 @@ function launchTab(jsonFromCSV, absences) {
         if (absences > 0)
             document.getElementById('absences').innerHTML = absences;
     }, 10);
+
+    // création simple de table html pour sweetALert pvtTable
+    var createTableColumnsHide = function(headers, data, className, button) {
+        // console.log(data, headers);
+        var html = document.createElement("div"),
+            p = document.createElement("p"),
+            title = "",
+            text = "";
+
+        var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
+        tab += '<thead><tr>';
+        headers.forEach(header => {
+            // console.log(header);
+            tab += '<th>' + header + '</th>';
+        });
+        tab += '</tr></thead>';
+        tab += '<tbody>';
+        data.forEach(name => {
+            tab += '<tr>';
+            tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
+            tab += '<td>' + columnName(name) + '</td>';
+            tab += '</tr>';
+        });
+        tab += '</tbody></table>';
+
+        // console.log($.parseHTML(extraTable)[0])
+        html.appendChild($.parseHTML(tab)[0]);
+        swal({
+                title: title,
+                text: text,
+                content: html,
+                className: "sweetalert-auto",
+                buttons: {
+                    hide: "masquer",
+                    annuler: true
+                },
+            })
+            .then((value) => {
+                switch (value) {
+                    case "hide":
+                        var inputElements = document.getElementsByClassName('checkboxColumn');
+                        for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
+                            if (inputElements[i].checked) {
+                                table.hideColumn(inputElements[i].value);
+                            }
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            });
+
+        // prettyDefault(title, text, html, "", "sweetalert-auto");
+        return true;
+    }
+
+    // création simple de table html pour sweetALert pvtTable
+    var createTableColumnsShow = function(headers, data, className, button) {
+        // console.log(data, headers);
+        var html = document.createElement("div"),
+            p = document.createElement("p"),
+            title = "",
+            text = "";
+
+        var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
+        tab += '<thead><tr>';
+        headers.forEach(header => {
+            // console.log(header);
+            tab += '<th>' + header + '</th>';
+        });
+        tab += '</tr></thead>';
+        tab += '<tbody>';
+        data.forEach(name => {
+            tab += '<tr>';
+            tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
+            tab += '<td>' + columnName(name) + '</td>';
+            tab += '</tr>';
+        });
+        tab += '</tbody></table>';
+
+        // console.log($.parseHTML(extraTable)[0])
+        html.appendChild($.parseHTML(tab)[0]);
+        swal({
+                title: title,
+                text: text,
+                content: html,
+                className: "sweetalert-auto",
+                buttons: { show: "afficher", annuler: true },
+            })
+            .then((value) => {
+                switch (value) {
+                    case "show":
+                        var inputElements = document.getElementsByClassName('checkboxColumn');
+                        for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
+                            if (inputElements[i].checked) {
+                                table.showColumn(inputElements[i].value);
+                            }
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            });
+
+        // prettyDefault(title, text, html, "", "sweetalert-auto");
+        return true;
+    }
 
     return true;
 } // FIN DE LAUNCHtAB

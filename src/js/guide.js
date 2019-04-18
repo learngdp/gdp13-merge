@@ -50,12 +50,12 @@ $(() => {
                 },
                 {
                     element: '#show-col',
-                    intro: 'Affiche la colonne sélectionnnée dans la liste déroulante ci-contre (à droite)',
+                    intro: 'Affiche un popup pour cocher les colonnes à afficher',
                     position: 'top'
                 },
                 {
                     element: '#hide-col',
-                    intro: 'Masque la colonne sélectionnnée idem dans la liste déroulante ci-contre (à droite)',
+                    intro: 'Affiche un popup pour cocher les colonnes à masquer',
                     position: 'top'
                 },
                 {

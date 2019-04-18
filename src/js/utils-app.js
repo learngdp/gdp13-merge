@@ -300,17 +300,19 @@ function setDataColumns(headersColumns) {
 }
 
 function customHeaderFilter(headerValue, rowValue, rowData, filterParams) {
-    var accept = (value, motif) =>  value.replace(motif, "").trim();
-    if ( headerValue.indexOf(">") !== -1 ) {
+    var accept = (value, motif) => value.replace(motif, "").trim();
+    if (headerValue.indexOf(">") !== -1 ) {
         return rowValue > accept(headerValue, ">");
-    } if ( headerValue.indexOf("<") !== -1 ) {
+    } else if (headerValue.indexOf("<") !== -1 ) {
         return rowValue < accept(headerValue, "<");
-    } if ( headerValue.indexOf("=") !== -1 ) {
+    } else if (headerValue.indexOf("=") !== -1 ) {
         return rowValue === accept(headerValue, "=");
-    } else {
+    }
+    else {
         return false
     }
-    return  true;
+
+    return true;
 }
 
 function groupByField(field) {
