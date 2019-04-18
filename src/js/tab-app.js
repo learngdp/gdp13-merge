@@ -37,8 +37,11 @@ function globalReport(jsonData, dataMappage) {
         row = data.slice(1, data.length)[i];
 
         var cohortName = row[5];
-        var grades = row[6] != undefined ? row[6].split(',') : "";
+        // var grades = row[6] != undefined ? row[6].split(',') : "";
         var livrableAvg = row[16];
+
+        var grades = row[32] != undefined ? row[32].split(',') : "";
+
         var enrollmentTrack = row[33] != undefined ? row[33].split(',') : "";
         var fusionnes = row[39] != undefined ? row[39].split(',') : "";
         var gradeTC = row[40];
@@ -80,9 +83,9 @@ function globalReport(jsonData, dataMappage) {
         var attestationPC,
             attestationPA;
 
-        var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
+        var PC_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2);
 
-        var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
+        var PA_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2 && livrableAvg >= pass70);
 
         var enrollment_oui = (verifieldTuples["TC"] === "verified" && verifieldTuples[cellHeader1] === "verified" && verifieldTuples[cellHeader2] === "verified");
 
@@ -116,27 +119,13 @@ function globalReport(jsonData, dataMappage) {
     }
 
     document.getElementById('finalStandard-btn').onclick = function(e) {
-        // console.log(e);
         tableauFinalStandard(dataFromCSV, dataMappage);
-    }
-
-    document.getElementById('exportCSVComma-btn').onclick = function(e) {
-        var dataExport = [];
-        console.log(data);
-        data.forEach((row, i) => {
-            var row = row.slice(0, 38);
-            if ( i !== 0)
-                row = row.map(d => pointToComma_FR(d));
-            dataExport.push(row);
-        });
-        exportCSVDefault(dataExport, "global_reportTC");
     }
 
     // *** EXTRA COHORTES
     buttonCohortes.onclick = function(e) {
         var selected = document.getElementById('selectCohortes-btn').value;
         var cohortesHtml = getDetailsCohortes(d3.csvParse(Papa.unparse(data)), selected, cohortTitle);
-        console.log(cohortesHtml);
         setTimeout(() => {
             getExtraData("cohortes (détails)", cohortesHtml, this, selected);
         }, 100);
@@ -148,8 +137,6 @@ function globalReport(jsonData, dataMappage) {
 }
 
 function launchTab(jsonFromCSV, absences) {
-    // console.log(jsonFromCSV);
-
     var data = jsonFromCSV.length > 1000 ? jsonFromCSV.slice(0, 1000) : jsonFromCSV.slice(0, jsonFromCSV.length);
     var diff = jsonFromCSV.slice(0, jsonFromCSV.length).length - data.length;
     var headers = jsonFromCSV.columns;
@@ -178,7 +165,6 @@ function launchTab(jsonFromCSV, absences) {
             $("#filter-type").prop("disabled", false);
             $("#filter-value").prop("disabled", false);
         }
-        console.log(filter, $("#filter-type").val(), $("#filter-value").val());
         table.setFilter(filter, $("#filter-type").val(), $("#filter-value").val());
     }
     //Update filters on value change
@@ -278,13 +264,28 @@ function launchTab(jsonFromCSV, absences) {
         table.download("csv", "export-grades.csv", {delimiter:","});
     }
 
+    document.getElementById('exportCSVComma-btn').onclick = function(e) {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        var dataExport = dataFiltered();
+        dataExport.slice(1, dataExport.length).forEach(row => {
+            for (var i = 0, lgi = row.length; i < lgi; i++) {
+                if (row[i].indexOf('.') !== -1 && !isNaN(parseFloat(row[i])))
+                    row[i] = parseFloat(row[i]).toLocaleString("fr-FR");
+            }
+        });
+        setTimeout(() => {
+            exportCSVDefault(dataExport, "global_reportTC");
+        document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        }, 100);
+    }
+
     var dataFiltered = function() {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
-        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value))
-        console.log(table.getData());
+        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value));
 
-        var columnsVisible = columns.map(column => column.field);
+        // var columnsVisible = columns.map(column => column.field);
+        var columnsVisible = columns.filter((column, i) => i < 38).map(column => column.field);
         var dataFiltered = filteredData.map(item => {
             return Object.keys(item)
                 .filter(key => columnsVisible.includes(key))

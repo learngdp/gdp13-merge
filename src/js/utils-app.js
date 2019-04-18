@@ -102,7 +102,6 @@ function getGroup(group) {
     var groups = [];
     while (group.getSubGroups()) {
         group.getSubGroups().forEach(subGroup => {
-            console.log(subGroup)
             groups.push(subGroup);
         });
     };
@@ -511,7 +510,6 @@ function createTableExtra(data, headers, className, text, extraTitle) {
     var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
     table += '<thead><tr>';
     headers.forEach(header => {
-        // console.log(header);
         table += '<th>' + header + '</th>';
     });
     table += '</tr></thead>';

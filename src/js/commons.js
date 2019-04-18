@@ -11,7 +11,7 @@ const headersTemplate = [
     "Name",
     "Username",
     "Cohort Name",
-    "Pre MOOC", // 32 à la place de Grade
+    "Pre MOOC", // 32 à la place de Grade 6
     "Évaluation Hebdo 1: Évaluation (notée)", // 7
     "Évaluation Hebdo 2: Évaluation (notée)",
     "Évaluation Hebdo 3: Évaluation (notée)",
@@ -37,15 +37,15 @@ const headersTemplate = [
     "TRIZ - Introduction aux principaux outils de TRIZ", // 29 -SPE 13
     "G2C - Gestion de crise", // 30 - SPE 14
     "PAE - Du Projet à l'Action Entrepreneuriale", // 31 - SPE 15
-    "Grade", // 6 à la place de Preemooc
+    "Grade", // 6 à la place de Preemooc 32
     "Enrollment Track", // 33
     "Verification Status",
     "Certificate Eligible",
     "Certificate Delivered",
     "Certificate Type",
     "Enrollment Status",
-    "fichiers fusionnés",
-    "Grade_TC" // 39
+    "fichiers fusionnés", // 39
+    "Grade_TC" // 40
 ];
 
 const cohortesOptions = [

@@ -82,8 +82,6 @@ function number_test(n) {
 }
 
 function tableauFinalStandard(data, dataMappage) {
-    console.log(data[0]);
-
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
         "Student ID", // 0
@@ -146,7 +144,6 @@ function tableauFinalStandard(data, dataMappage) {
     var dataSpec = data.slice(1, data.length).sort(function (a, b) {
         return a[0] - b[0];
     });
-    console.log(data[0], headersSpe, dataSpec);
 
     // Test pour vérifier le format décimal dans le jeu de données... à optimiser
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
@@ -172,8 +169,6 @@ function tableauFinalStandard(data, dataMappage) {
         name = dataSpec[i][3];
         cohorte = dataSpec[i][5];
 
-        // console.log(dataSpec[i]);
-
         // nombre spr réussies
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 
@@ -193,10 +188,8 @@ function tableauFinalStandard(data, dataMappage) {
 
         // Ajout colonne vide pour mappage nom
         var checkEmail = dataMappage.find(item => {
-            // console.log(item.id, dataSpec[i][0]);
             return item.id === dataSpec[i][0];
         });
-        // console.log(checkEmail);
         (checkEmail && checkEmail !== undefined) ? checkEmail = checkEmail.email: checkEmail = "";
 
         // ajout colonnes email pour mappage mail inscription
@@ -209,8 +202,6 @@ function tableauFinalStandard(data, dataMappage) {
             dataSpec[i].splice(5, 1, "OUI") : dataSpec[i].splice(5, 1, "NON");
         classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
-
-        console.log(dataSpec[i][0], dataSpec[i][7], dataSpec[i][8], dataSpec[i][9], dataSpec[i][10]);
 
 
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
@@ -289,7 +280,7 @@ function tableauFinalStandard(data, dataMappage) {
         ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
-    console.log(data[0]);
+
     // suppression de la 1ère lignes de titres
     data.splice(0, 1);
 

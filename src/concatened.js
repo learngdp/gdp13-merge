@@ -76,7 +76,11 @@ fileInput.onchange = function (e) {
     let promises = [];
     let fileNames = [];
     for (var i = 0, lgi = files.length; i < lgi; i++) {
-        promises.push(getDataFiles(files[i], fileNames));
+        if (regexFileNamesTemplate.test(files[i].name)) {
+            promises.push(getDataFiles(files[i], fileNames));
+        } else {
+            return prettyDefaultReload("Information erreur", "Oups! Apparmment, il y a une erreur dans le type de titre attendu...", "warning");
+        }
     }
 
     Promise.all(promises)
@@ -377,7 +381,7 @@ const headersTemplate = [
     "Name",
     "Username",
     "Cohort Name",
-    "Pre MOOC", // 32 à la place de Grade
+    "Pre MOOC", // 32 à la place de Grade 6
     "Évaluation Hebdo 1: Évaluation (notée)", // 7
     "Évaluation Hebdo 2: Évaluation (notée)",
     "Évaluation Hebdo 3: Évaluation (notée)",
@@ -403,15 +407,15 @@ const headersTemplate = [
     "TRIZ - Introduction aux principaux outils de TRIZ", // 29 -SPE 13
     "G2C - Gestion de crise", // 30 - SPE 14
     "PAE - Du Projet à l'Action Entrepreneuriale", // 31 - SPE 15
-    "Grade", // 6 à la place de Preemooc
+    "Grade", // 6 à la place de Preemooc 32
     "Enrollment Track", // 33
     "Verification Status",
     "Certificate Eligible",
     "Certificate Delivered",
     "Certificate Type",
     "Enrollment Status",
-    "fichiers fusionnés",
-    "Grade_TC" // 39
+    "fichiers fusionnés", // 39
+    "Grade_TC" // 40
 ];
 
 const cohortesOptions = [
@@ -640,7 +644,6 @@ function getGroup(group) {
     var groups = [];
     while (group.getSubGroups()) {
         group.getSubGroups().forEach(subGroup => {
-            console.log(subGroup)
             groups.push(subGroup);
         });
     };
@@ -1049,7 +1052,6 @@ function createTableExtra(data, headers, className, text, extraTitle) {
     var table = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
     table += '<thead><tr>';
     headers.forEach(header => {
-        // console.log(header);
         table += '<th>' + header + '</th>';
     });
     table += '</tr></thead>';
@@ -1128,8 +1130,11 @@ function globalReport(jsonData, dataMappage) {
         row = data.slice(1, data.length)[i];
 
         var cohortName = row[5];
-        var grades = row[6] != undefined ? row[6].split(',') : "";
+        // var grades = row[6] != undefined ? row[6].split(',') : "";
         var livrableAvg = row[16];
+
+        var grades = row[32] != undefined ? row[32].split(',') : "";
+
         var enrollmentTrack = row[33] != undefined ? row[33].split(',') : "";
         var fusionnes = row[39] != undefined ? row[39].split(',') : "";
         var gradeTC = row[40];
@@ -1171,9 +1176,9 @@ function globalReport(jsonData, dataMappage) {
         var attestationPC,
             attestationPA;
 
-        var PC_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2);
+        var PC_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2);
 
-        var PA_oui = (grades != "" && +grades[0] >= 0.7 && countSpe >= 2 && livrableAvg >= 0.7);
+        var PA_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2 && livrableAvg >= pass70);
 
         var enrollment_oui = (verifieldTuples["TC"] === "verified" && verifieldTuples[cellHeader1] === "verified" && verifieldTuples[cellHeader2] === "verified");
 
@@ -1207,27 +1212,13 @@ function globalReport(jsonData, dataMappage) {
     }
 
     document.getElementById('finalStandard-btn').onclick = function(e) {
-        // console.log(e);
         tableauFinalStandard(dataFromCSV, dataMappage);
-    }
-
-    document.getElementById('exportCSVComma-btn').onclick = function(e) {
-        var dataExport = [];
-        console.log(data);
-        data.forEach((row, i) => {
-            var row = row.slice(0, 38);
-            if ( i !== 0)
-                row = row.map(d => pointToComma_FR(d));
-            dataExport.push(row);
-        });
-        exportCSVDefault(dataExport, "global_reportTC");
     }
 
     // *** EXTRA COHORTES
     buttonCohortes.onclick = function(e) {
         var selected = document.getElementById('selectCohortes-btn').value;
         var cohortesHtml = getDetailsCohortes(d3.csvParse(Papa.unparse(data)), selected, cohortTitle);
-        console.log(cohortesHtml);
         setTimeout(() => {
             getExtraData("cohortes (détails)", cohortesHtml, this, selected);
         }, 100);
@@ -1239,8 +1230,6 @@ function globalReport(jsonData, dataMappage) {
 }
 
 function launchTab(jsonFromCSV, absences) {
-    // console.log(jsonFromCSV);
-
     var data = jsonFromCSV.length > 1000 ? jsonFromCSV.slice(0, 1000) : jsonFromCSV.slice(0, jsonFromCSV.length);
     var diff = jsonFromCSV.slice(0, jsonFromCSV.length).length - data.length;
     var headers = jsonFromCSV.columns;
@@ -1269,7 +1258,6 @@ function launchTab(jsonFromCSV, absences) {
             $("#filter-type").prop("disabled", false);
             $("#filter-value").prop("disabled", false);
         }
-        console.log(filter, $("#filter-type").val(), $("#filter-value").val());
         table.setFilter(filter, $("#filter-type").val(), $("#filter-value").val());
     }
     //Update filters on value change
@@ -1369,13 +1357,28 @@ function launchTab(jsonFromCSV, absences) {
         table.download("csv", "export-grades.csv", {delimiter:","});
     }
 
+    document.getElementById('exportCSVComma-btn').onclick = function(e) {
+        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+        var dataExport = dataFiltered();
+        dataExport.slice(1, dataExport.length).forEach(row => {
+            for (var i = 0, lgi = row.length; i < lgi; i++) {
+                if (row[i].indexOf('.') !== -1 && !isNaN(parseFloat(row[i])))
+                    row[i] = parseFloat(row[i]).toLocaleString("fr-FR");
+            }
+        });
+        setTimeout(() => {
+            exportCSVDefault(dataExport, "global_reportTC");
+        document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+        }, 100);
+    }
+
     var dataFiltered = function() {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
-        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value))
-        console.log(table.getData());
+        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value));
 
-        var columnsVisible = columns.map(column => column.field);
+        // var columnsVisible = columns.map(column => column.field);
+        var columnsVisible = columns.filter((column, i) => i < 38).map(column => column.field);
         var dataFiltered = filteredData.map(item => {
             return Object.keys(item)
                 .filter(key => columnsVisible.includes(key))
@@ -1482,8 +1485,6 @@ function number_test(n) {
 }
 
 function tableauFinalStandard(data, dataMappage) {
-    console.log(data[0]);
-
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
         "Student ID", // 0
@@ -1546,7 +1547,6 @@ function tableauFinalStandard(data, dataMappage) {
     var dataSpec = data.slice(1, data.length).sort(function (a, b) {
         return a[0] - b[0];
     });
-    console.log(data[0], headersSpe, dataSpec);
 
     // Test pour vérifier le format décimal dans le jeu de données... à optimiser
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
@@ -1572,8 +1572,6 @@ function tableauFinalStandard(data, dataMappage) {
         name = dataSpec[i][3];
         cohorte = dataSpec[i][5];
 
-        // console.log(dataSpec[i]);
-
         // nombre spr réussies
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 
@@ -1593,10 +1591,8 @@ function tableauFinalStandard(data, dataMappage) {
 
         // Ajout colonne vide pour mappage nom
         var checkEmail = dataMappage.find(item => {
-            // console.log(item.id, dataSpec[i][0]);
             return item.id === dataSpec[i][0];
         });
-        // console.log(checkEmail);
         (checkEmail && checkEmail !== undefined) ? checkEmail = checkEmail.email: checkEmail = "";
 
         // ajout colonnes email pour mappage mail inscription
@@ -1609,8 +1605,6 @@ function tableauFinalStandard(data, dataMappage) {
             dataSpec[i].splice(5, 1, "OUI") : dataSpec[i].splice(5, 1, "NON");
         classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
-
-        console.log(dataSpec[i][0], dataSpec[i][7], dataSpec[i][8], dataSpec[i][9], dataSpec[i][10]);
 
 
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
@@ -1689,7 +1683,7 @@ function tableauFinalStandard(data, dataMappage) {
         ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
-    console.log(data[0]);
+
     // suppression de la 1ère lignes de titres
     data.splice(0, 1);
 
@@ -1701,6 +1695,7 @@ function tableauFinalStandard(data, dataMappage) {
         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
     }, 100);
 }
+
 $(() => {
     document.getElementById('guide-btn').onclick = function (e) {
 

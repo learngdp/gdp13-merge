@@ -18,7 +18,11 @@ fileInput.onchange = function (e) {
     let promises = [];
     let fileNames = [];
     for (var i = 0, lgi = files.length; i < lgi; i++) {
-        promises.push(getDataFiles(files[i], fileNames));
+        if (regexFileNamesTemplate.test(files[i].name)) {
+            promises.push(getDataFiles(files[i], fileNames));
+        } else {
+            return prettyDefaultReload("Information erreur", "Oups! Apparmment, il y a une erreur dans le type de titre attendu...", "warning");
+        }
     }
 
     Promise.all(promises)
