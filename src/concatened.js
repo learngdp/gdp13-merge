@@ -1321,7 +1321,7 @@ function launchTab(jsonFromCSV, absences) {
             if (column.getVisibility())
                 columnNames.push(column.getField());
         });
-        createTableColumnsHide(["case", "colonnes"], columnNames, "pvtTable", table);
+        createTableColumns(["case", "colonnes"], columnNames, "pvtTable", table, "hide");
         columnNames = null;
     }
 
@@ -1331,7 +1331,7 @@ function launchTab(jsonFromCSV, absences) {
             if (!column.getVisibility())
                 columnNames.push(column.getField());
         });
-        createTableColumnsShow(["case", "colonnes"], columnNames, "pvtTable", table);
+        createTableColumns(["case", "colonnes"], columnNames, "pvtTable", table, "show");
         columnNames = null;
     }
 
@@ -1419,12 +1419,13 @@ function launchTab(jsonFromCSV, absences) {
     }, 10);
 
     // création simple de table html pour sweetALert pvtTable
-    var createTableColumnsHide = function(headers, data, className, button) {
+    var createTableColumns = function(headers, data, className, table, type) {
         // console.log(data, headers);
         var html = document.createElement("div"),
             p = document.createElement("p"),
             title = "",
-            text = "";
+            text = "",
+            buttons = (type === "hide") ? { hide: "masquer", annuler: true } : { show: "afficher", annuler: true };
 
         var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
         tab += '<thead><tr>';
@@ -1449,67 +1450,20 @@ function launchTab(jsonFromCSV, absences) {
                 text: text,
                 content: html,
                 className: "sweetalert-auto",
-                buttons: {
-                    hide: "masquer",
-                    annuler: true
-                },
+                buttons: buttons,
             })
             .then((value) => {
                 switch (value) {
                     case "hide":
                         var inputElements = document.getElementsByClassName('checkboxColumn');
                         for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
-                            console.log(inputElements[i].value);
+                            // console.log(inputElements[i].value);
                             if (inputElements[i].checked) {
                                 table.hideColumn(inputElements[i].value);
                             }
                         }
                         break;
 
-                    default:
-                        break;
-                }
-            });
-
-        // prettyDefault(title, text, html, "", "sweetalert-auto");
-        return true;
-    }
-
-    // création simple de table html pour sweetALert pvtTable
-    var createTableColumnsShow = function(headers, data, className, button) {
-        // console.log(data, headers);
-        var html = document.createElement("div"),
-            p = document.createElement("p"),
-            title = "",
-            text = "";
-
-        var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
-        tab += '<thead><tr>';
-        headers.forEach(header => {
-            // console.log(header);
-            tab += '<th>' + header + '</th>';
-        });
-        tab += '</tr></thead>';
-        tab += '<tbody>';
-        data.forEach(name => {
-            tab += '<tr>';
-            tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
-            tab += '<td>' + columnName(name) + '</td>';
-            tab += '</tr>';
-        });
-        tab += '</tbody></table>';
-
-        // console.log($.parseHTML(extraTable)[0])
-        html.appendChild($.parseHTML(tab)[0]);
-        swal({
-                title: title,
-                text: text,
-                content: html,
-                className: "sweetalert-auto",
-                buttons: { show: "afficher", annuler: true },
-            })
-            .then((value) => {
-                switch (value) {
                     case "show":
                         var inputElements = document.getElementsByClassName('checkboxColumn');
                         for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
