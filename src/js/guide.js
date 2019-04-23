@@ -1,20 +1,17 @@
 $(() => {
     document.getElementById('guide-btn').onclick = function (e) {
 
-        var content_filterField = 'Liste déroulante à 2 fonctions:';
-        content_filterField += '<ol><li>Permet de sélectionner une colonne pour l\'afficher ou la masquer (comme vu précédemment)</li>';
-        content_filterField += '<li>Applique un filtre sur l\'ensemble du tableau en fonction de la colonne sélectionnée</li></ol>';
-        content_filterField += '<p><i class="fas fa-info-circle"></i> Dans le cas du filtre, vous pouvez appliquer un double filtre sur l\'ensemble du tableau ';
-        content_filterField += 'en sélectionnant la colonne "Cohort Name" dans cette liste avec par exemple l\'opérateur != {vide} pour avoir les cohortes "non vide"'
-        content_filterField += ' ou par = {vide} pour les sans cohortes et ensuite appliquer un second filtre sur l\'entête de la colonne "Grade TC" pour trouver les valeurs >="</p>';
+        var content_filterField = 'Liste déroulante';
+        content_filterField += '<ul><li>Applique un filtre sur l\'ensemble du tableau en fonction de la colonne sélectionnée dans la liste</li></ul>';
 
         var content_groupByInput = 'Case de saisie à 2 fonctions (regrouper les lignes du tableau par entête.s de colonnes):';
         content_groupByInput += '<ol><li>Saisie automatique "indirecte" par un CLIC DROIT successivement sur un ou plusieurs entêtes de colonne</li>';
         content_groupByInput += '<li>Saisie manuelle d\'un entête de colonne à la condition que le texte saisi soit identique y compris la casse</li></ol>';
 
-        var content_filterHeader = 'Filtre dynamique à 2 possibiltés:';
-        content_filterHeader += '<ol><li> ... saisir des caractères alphanumériques, filtrage des données en temps réel en fonction de la saisie</li>';
-        content_filterHeader += '<li> >= chiffre seulement par saisie directe ou en utilisant les flèches (à droite) pour incrémenter ou décrémenter</li></ol>';
+        var content_filterHeader = 'Filtre dynamique à 3 possibiltés:';
+        content_filterHeader += '<ol><li> ... filtrage à partir de caractères alphanumériques. Prévoir une légère latence qui permet la prise en compte en cours de saisie</li>';
+        content_filterHeader += '<li> >= chiffre seulement par saisie directe ou en utilisant les flèches (à droite) pour incrémenter ou décrémenter</li>';
+        content_filterHeader += '<li> > ou < ou =  saisir un des 3 signes pour "strictement" suivi d\'une valeur en fonction du contenu de la colonne</li></ol>';
 
         var intro = introJs();
         intro.setOptions({
@@ -35,19 +32,19 @@ $(() => {
                 },
                 {
                     element: '#showConcat-col',
-                    intro: 'Affiche les colonnes concaténées "Grade", "Enrollment Track", "Verification Status", "Enrollment Status"',
+                    intro: 'Affiche ou masque les colonnes concaténées "Grade", "Enrollment Track", "Verification Status", "Enrollment Status"',
                     position: 'top'
                 },
-                {
-                    element: '#showAll-coll',
-                    intro: 'Affiche toutes les colonnes',
-                    position: 'top'
-                },
-                {
-                    element: '#hideAll-coll',
-                    intro: 'Affiche ou masque les colonnes telles qu\'elles le sont au démarrage de l\'application',
-                    position: 'top'
-                },
+                // {
+                //     element: '#showAll-coll',
+                //     intro: 'Affiche toutes les colonnes',
+                //     position: 'top'
+                // },
+                // {
+                //     element: '#hideAll-coll',
+                //     intro: 'Affiche ou masque les colonnes telles qu\'elles le sont au démarrage de l\'application',
+                //     position: 'top'
+                // },
                 {
                     element: '#show-col',
                     intro: 'Affiche un popup pour cocher les colonnes à afficher',
