@@ -12,15 +12,15 @@
         <div>
             <div>
                 <button id="deselectAll-rows" class="mainButton small" title="aucune sélection"><i class="fas fa-table"></i></button>
-                <button id="showConcat-col" class="mainButton small" title="affiche les colonnes concaténées"><i class="fas fa-grip-lines-vertical"></i></button>
+                <button id="showConcat-col" class="mainButton small" title="affiche les colonnes concaténées" data-state="without"><i class="fas fa-grip-lines-vertical"></i></button>
 
-                <button id="showAll-coll" class="mainButton small" title="afficher toutes les colonnes"><i class="far fa-eye"></i></button>
-                <button id="hideAll-coll" class="mainButton small" title="masquer les colonnes comme au démarrage"><i class="far fa-eye-slash"></i></button>
+                <!-- <button id="showAll-coll" class="mainButton small" title="afficher toutes les colonnes"><i class="far fa-eye"></i></button> -->
+                <!-- <button id="hideAll-coll" class="mainButton small" title="masquer les colonnes comme au démarrage"><i class="far fa-eye-slash"></i></button> -->
 
-                <button id="show-col" class="small" title="afficher la colonne" style="margin-left:1em"><i class="fas fa-eye"></i></button>
-                <button id="hide-col" class="small" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
+                <button id="show-col" class="mainButton small" title="afficher la colonne"><i class="fas fa-eye"></i></button>
+                <button id="hide-col" class="mainButton small" title="masquer la colonne"><i class="fas fa-eye-slash"></i></button>
 
-                <select name="filter-field" class="small" id="filter-field" style="width: 160px" title="entêtes des colonnes"></select>
+                <select name="filter-field" class="small" id="filter-field" style="width: 160px; margin-left: 2em" title="entêtes des colonnes"></select>
                 <select name="filter-type" class="small" id="filter-type" style="width: 60px" title="type d'opérateurs pour filtre"></select>
                 <input name="filter-value" class="small" id="filter-value" type="text" style="width: 100px;" placeholder="filtre par type..." />
                 <button id="filter-clear" class="small" title="effacer"><i class="fas fa-eraser"></i></button>

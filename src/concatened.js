@@ -591,6 +591,7 @@ function tableOptions(data, columns) {
             column: "Student ID",
             dir: "asc"
         }, ],
+        groupToggleElement: "header",
         rowClick: function (e, row) {},
         rowSelectionChanged: function (data, rows) {
             document.getElementById('rowSelected').innerHTML = data.length;
@@ -1135,7 +1136,8 @@ function globalReport(jsonData, dataMappage) {
 
     var pass70 = 0.695,
         absences = 0,
-        checkFiles = [], row, countSpe;
+        checkFiles = [],
+        row, countSpe;
 
     for (var i = 0, lgi = data.slice(1, data.length).length; i < lgi; i++) {
         row = data.slice(1, data.length)[i];
@@ -1158,11 +1160,11 @@ function globalReport(jsonData, dataMappage) {
         if (row[3] === "Absent sur profile_info")
             absences++;
 
-            if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
-                checkFiles.push([row[0], row[39]]);
-            } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length - 1] !== 'PA') {
-                checkFiles.push([row[0], row[39]]);
-            }
+        if (row[39] && row[39].split(',').indexOf('TC') !== -1 && row[39].split(',')[0] !== 'TC') {
+            checkFiles.push([row[0], row[39]]);
+        } else if (row[39] && row[39].split(',').indexOf('PA') !== -1 && row[39].split(',')[row[39].split(',').length - 1] !== 'PA') {
+            checkFiles.push([row[0], row[39]]);
+        }
 
         countSpe = rangeSpe[i].filter(el => el > pass70).length;
 
@@ -1217,17 +1219,17 @@ function globalReport(jsonData, dataMappage) {
         document.getElementById('checkFiles-btn').classList.add('blink');
     }
 
-    document.getElementById('checkFiles-btn').onclick = function() {
+    document.getElementById('checkFiles-btn').onclick = function () {
         checkFiles.unshift([data[0][0], data[0][40]]);
         exportCSVDefault(checkFiles, "erreur-fusion-fichiers");
     }
 
-    document.getElementById('finalStandard-btn').onclick = function(e) {
+    document.getElementById('finalStandard-btn').onclick = function (e) {
         tableauFinalStandard(dataFromCSV, dataMappage);
     }
 
     // *** EXTRA COHORTES
-    buttonCohortes.onclick = function(e) {
+    buttonCohortes.onclick = function (e) {
         var selected = document.getElementById('selectCohortes-btn').value;
         var cohortesHtml = getDetailsCohortes(d3.csvParse(Papa.unparse(data)), selected, cohortTitle);
         setTimeout(() => {
@@ -1251,10 +1253,14 @@ function launchTab(jsonFromCSV, absences) {
     // set columns with formatters and others options
     var columns = setDataColumns(headers);
 
-    var headersHidden = columns.filter(column => column.visible != undefined && !column.visible).map(column => column.field);
+
 
     //create Tabulator on DOM element with id "table-app"
     var table = new Tabulator("#table-app", tableOptions(data, columns));
+
+    var headersHiddenOnStart = table.getColumns().filter(column => !column.getVisibility()).map(column => column.getField());
+    var headersShownOnStart = table.getColumns().filter(column => column.getVisibility()).map(column => column.getField());
+    // console.log(headersShown);
 
     // for large data
     replaceDataAfterLoaded(table, jsonFromCSV, diff, 1000);
@@ -1275,7 +1281,7 @@ function launchTab(jsonFromCSV, absences) {
     $("#filter-field, #filter-type").change(updateFilter);
     $("#filter-value").keyup(updateFilter);
     //Clear filters on "Clear Filters" button click
-    $("#filter-clear").click(function() {
+    $("#filter-clear").click(function () {
         $("#filter-field").val("Student ID");
         $("#filter-type").val("like");
         $("#filter-value").val("");
@@ -1283,11 +1289,11 @@ function launchTab(jsonFromCSV, absences) {
         table.clearFilter();
     });
 
-    document.getElementById('filtersHeader-clear').onclick = function(e) {
+    document.getElementById('filtersHeader-clear').onclick = function (e) {
         table.clearHeaderFilter();
     }
 
-    document.getElementById('groupBy-btn').onclick = function(e) {
+    document.getElementById('groupBy-btn').onclick = function (e) {
         var groupValues = document.getElementById('groupBy-input').value;
         var fields = [],
             groupsNumber = [];
@@ -1301,13 +1307,13 @@ function launchTab(jsonFromCSV, absences) {
         }
     }
 
-    document.getElementById('groupBy-btn').onmouseover = function(e) {
+    document.getElementById('groupBy-btn').onmouseover = function (e) {
         var title = document.getElementById('groupBy-input').value ? "grouper par: " + document.getElementById('groupBy-input').value :
             "grouper par entête"
         e.target.title = title;
     };
 
-    document.getElementById('degroupBy-btn').onclick = function(e) {
+    document.getElementById('degroupBy-btn').onclick = function (e) {
         document.getElementById('groupBy-input').value = "";
         table.setGroupBy("");
         document.getElementById('groupsNumber').innerHTML = "";
@@ -1315,70 +1321,94 @@ function launchTab(jsonFromCSV, absences) {
         document.getElementById('groupBy-btn').title = "grouper par entête"
     }
 
-    document.getElementById('hide-col').onclick = function() {
+    document.getElementById('hide-col').onclick = function () {
         var columnNames = [];
         table.getColumns().forEach(column => {
             if (column.getVisibility())
                 columnNames.push(column.getField());
         });
-        createTableColumns(["case", "colonnes"], columnNames, "pvtTable", table, "hide");
+        createTableColumns(["", "colonnes"], columnNames, "pvtTable", table, "hide");
         columnNames = null;
     }
 
-    document.getElementById('show-col').onclick = function() {
+    document.getElementById('show-col').onclick = function () {
         var columnNames = [];
         table.getColumns().forEach(column => {
             if (!column.getVisibility())
                 columnNames.push(column.getField());
         });
-        createTableColumns(["case", "colonnes"], columnNames, "pvtTable", table, "show");
+        createTableColumns(["", "colonnes"], columnNames, "pvtTable", table, "show");
         columnNames = null;
     }
 
-    document.getElementById('showAll-coll').onclick = function() {
+    // document.getElementById('showAll-coll').onclick = function() {
+    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+    //     setTimeout(() => {
+    //         headers.forEach(header => {
+    //             table.showColumn(header);
+    //         });
+    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+    //     }, 10)
+    // }
+
+    // document.getElementById('hideAll-coll').onclick = function() {
+    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
+    //     setTimeout(() => {
+    //         headersHidden.forEach(header => {
+    //             table.hideColumn(header);
+    //         });
+    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+    //         document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
+    //         table.redraw();
+    //     }, 10)
+    // }
+
+    document.getElementById('showConcat-col').onclick = function () {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        setTimeout(() => {
-            headers.forEach(header => {
-                table.showColumn(header);
-            });
-            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-        }, 10)
+        if (this.dataset.state === "without") {
+            var headersColumnsConcat = headersShownOnStart.concat(["Grade", "Enrollment Track", "Verification Status", "Enrollment Status"]);
+            setTimeout(() => {
+                headers.forEach(header => {
+                    if (headersColumnsConcat.indexOf(header) !== -1) {
+                        table.showColumn(header);
+                    } else {
+                        table.hideColumn(header);
+                    }
+                });
+                document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+                this.firstChild.classList.replace("fa-grip-lines-vertical", "fa-grip-lines");
+                this.dataset.state = "with";
+                table.redraw();
+            }, 10)
+        } else {
+            setTimeout(() => {
+                headers.forEach(header => {
+                    if (headersShownOnStart.indexOf(header) !== -1) {
+                        table.showColumn(header);
+                    } else {
+                        table.hideColumn(header);
+                    }
+                });
+                document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+                this.firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
+                this.dataset.state = "without";
+                table.redraw();
+            }, 10)
+
+        }
     }
 
-    document.getElementById('hideAll-coll').onclick = function() {
-        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        setTimeout(() => {
-            headersHidden.forEach(header => {
-                table.hideColumn(header);
-            });
-            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-            document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
-            table.redraw();
-        }, 10)
-    }
-
-    document.getElementById('showConcat-col').onclick = function() {
-        document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        var headersColumnsConcat = ["Grade", "Enrollment Track", "Verification Status", "Enrollment Status"];
-        setTimeout(() => {
-            headersColumnsConcat.forEach(header => {
-                table.showColumn(header);
-            });
-            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-            this.firstChild.classList.replace("fa-grip-lines-vertical", "fa-grip-lines");
-            table.redraw();
-        }, 10)
-    }
-
-    $("#deselectAll-rows").click(function() {
+    $("#deselectAll-rows").click(function () {
         table.deselectRow();
     });
 
-    document.getElementById('exportCSV-btn').onclick = function(e) {
-        table.download("csv", "export-grades.csv", {delimiter:","});
+    document.getElementById('exportCSV-btn').onclick = function (e) {
+        table.download("csv", "export-grades.csv", {
+            delimiter: ","
+        });
     }
 
-    document.getElementById('exportCSVComma-btn').onclick = function(e) {
+    document.getElementById('exportCSVComma-btn').onclick = function (e) {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         var dataExport = dataFiltered();
         dataExport.slice(1, dataExport.length).forEach(row => {
@@ -1389,11 +1419,11 @@ function launchTab(jsonFromCSV, absences) {
         });
         setTimeout(() => {
             exportCSVDefault(dataExport, "global_reportTC");
-        document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
+            document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         }, 100);
     }
 
-    var dataFiltered = function() {
+    var dataFiltered = function () {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
         var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value));
@@ -1419,32 +1449,53 @@ function launchTab(jsonFromCSV, absences) {
     }, 10);
 
     // création simple de table html pour sweetALert pvtTable
-    var createTableColumns = function(headers, data, className, table, type) {
-        // console.log(data, headers);
+    var createTableColumns = function (headers, data, className, table, type) {
+        var input0 = '<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em; margin-top: -0.7em" id="checkAll"/>';
         var html = document.createElement("div"),
             p = document.createElement("p"),
             title = "",
             text = "",
-            buttons = (type === "hide") ? { hide: "masquer", annuler: true } : { show: "afficher", annuler: true };
+            buttons = (type === "hide") ? {
+                hide: "masquer",
+                annuler: true
+            } : {
+                show: "afficher",
+                annuler: true
+            };
+
+        // console.log(type, buttons);
 
         var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
         tab += '<thead><tr>';
-        headers.forEach(header => {
-            // console.log(header);
-            tab += '<th>' + header + '</th>';
+        headers.forEach((header, i) => {
+            if (i === 0) {
+                tab += '<th id="th_' + i + '">' + input0 + '</th>';
+            } else {
+                tab += '<th id="th_' + i + '">' + header + '</th>';
+            }
         });
         tab += '</tr></thead>';
         tab += '<tbody>';
         data.forEach(name => {
             tab += '<tr>';
             tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
-            tab += '<td>' + columnName(name) + '</td>';
+            tab += '<td>' + name + '</td>';
             tab += '</tr>';
         });
         tab += '</tbody></table>';
 
+        // Réinitialise le premier <td> dans les titres par un <th>
+        // $('table.pvtTable thead tr th:first-child').prepend('<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="all"/>');
+
         // console.log($.parseHTML(extraTable)[0])
         html.appendChild($.parseHTML(tab)[0]);
+
+        setTimeout(() => {
+            document.getElementById('checkAll').addEventListener('click', function (e) {
+                $(':checkbox').prop('checked', this.checked);
+            }, false);
+        }, 10);
+
         swal({
                 title: title,
                 text: text,
@@ -1462,6 +1513,7 @@ function launchTab(jsonFromCSV, absences) {
                                 table.hideColumn(inputElements[i].value);
                             }
                         }
+                        swal("Terminé !", "", "success");
                         break;
 
                     case "show":
@@ -1471,6 +1523,7 @@ function launchTab(jsonFromCSV, absences) {
                                 table.showColumn(inputElements[i].value);
                             }
                         }
+                        swal("Terminé !", "", "success");
                         break;
 
                     default:
@@ -1484,8 +1537,6 @@ function launchTab(jsonFromCSV, absences) {
 
     return true;
 } // FIN DE LAUNCHtAB
-
-
 function getDetailsCohortes(data, selected, cohortTitle) {
 
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;

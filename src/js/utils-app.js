@@ -49,6 +49,7 @@ function tableOptions(data, columns) {
             column: "Student ID",
             dir: "asc"
         }, ],
+        groupToggleElement: "header",
         rowClick: function (e, row) {},
         rowSelectionChanged: function (data, rows) {
             document.getElementById('rowSelected').innerHTML = data.length;
