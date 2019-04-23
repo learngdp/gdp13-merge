@@ -45,11 +45,12 @@ function tableOptions(data, columns) {
         footerElement: footerContent,
         history: true,
         tooltips: true,
+        placeholder: "Aucune donnée disponible",
+        groupToggleElement: "header",
         initialSort: [{
             column: "Student ID",
             dir: "asc"
         }, ],
-        groupToggleElement: "header",
         rowClick: function (e, row) {},
         rowSelectionChanged: function (data, rows) {
             document.getElementById('rowSelected').innerHTML = data.length;
