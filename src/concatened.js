@@ -149,14 +149,14 @@ function flatData(dataFiles, uniqueHeaders) {
             dataFiles.forEach(file => {
                 dataSelected.push(file[Object.keys(file)[0]].map(obj => {
                     if (regexAllSPE.test(Object.keys(file)[0]))
-                        obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
+                    obj["filename imported"] = Object.keys(file)[0].match(regexAllSPE)[0].replace(/SPE\-/, "").replace(/[\_\d]{2}/g, '').replace(/\_/g, '');
                     return obj;
                 }));
             });
         } else {
             dataSelected.push(dataFiles[0][Object.keys(dataFiles[0])[0]].map(obj => {
                 if (regexAllSPE.test(Object.keys(dataFiles[0])[0]))
-                    obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, "");
+                obj["filename imported"] = Object.keys(dataFiles[0])[0].match(regexAllSPE)[0].replace(/SPE\-/, "").replace(/[\_\d]{2}/g, '').replace(/\_/g, '');
                 return obj;
             }));
         }
