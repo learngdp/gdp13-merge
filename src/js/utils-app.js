@@ -206,34 +206,21 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i === 12) {
+        } else if (i === 8 || i === 12 || i === 18) { // nb SPE validées
             columns.push({
                 id: i,
                 title: name,
                 field: column,
                 headerFilter: "input",
-                headerFilterPlaceholder: "> ou < ou =",
+                headerFilterPlaceholder: "< <= = >= >",
+                // headerFilterFunc: ">=",
                 headerFilterFunc: customHeaderFilter,
-                headerContext: function (e, column) {
-                    e.preventDefault();
-                    groupByField(column.getField());
-                }
-            });
-        } else if (i === 8 || i === 18) {
-            columns.push({
-                id: i,
-                title: name,
-                field: column,
-                formatter: "numberfmt",
-                headerFilter: "number",
-                headerFilterPlaceholder: ">=",
-                headerFilterFunc: ">=",
-                headerFilterParams: {
-                    min: 0,
-                    max: 1,
-                    step: 0.01
-                },
-                headerContext: function (e, column) {
+                // headerFilterParams: {
+                //     min: 0,
+                //     max: 15,
+                //     step: 1
+                // },
+                headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
                 }
@@ -303,11 +290,17 @@ function setDataColumns(headersColumns) {
 
 function customHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     var accept = (value, motif) => value.replace(motif, "").trim();
-    if (headerValue.indexOf(">") !== -1 ) {
+    if ( /(\>\=)/.test(headerValue) ) {
+        return rowValue >= accept(headerValue, ">=");
+    } else if ( /(\<\=)/.test(headerValue) ) {
+        return rowValue <= accept(headerValue, "<=");
+    } else if ( /(\!\=)/.test(headerValue) ) {
+        return rowValue != accept(headerValue, "!=");
+    } else if ( /\>(?!=)/.test(headerValue) ) {
         return rowValue > accept(headerValue, ">");
-    } else if (headerValue.indexOf("<") !== -1 ) {
+    } else if ( /\<(?!=)/.test(headerValue) ) {
         return rowValue < accept(headerValue, "<");
-    } else if (headerValue.indexOf("=") !== -1 ) {
+    } else if ( /(?<!\<|>)\=(?!\>)/.test(headerValue) ) {
         return rowValue === accept(headerValue, "=");
     }
     else {
