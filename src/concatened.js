@@ -1198,11 +1198,13 @@ function globalReport(jsonData, dataMappage) {
 
         var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
 
-        // validation attestation PC
-        (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && cohortName != "") ? attestationPC = "OUI" : (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
+        // validation attestation TC
+        // (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && cohortName != "") ? attestationPC = "OUI" : (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
+        (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
 
         // validation attestion PA
-        (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
+        // (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
+        (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
 
         row.splice(6, 0, attestationPC);
         row.splice(7, 0, attestationPA);
