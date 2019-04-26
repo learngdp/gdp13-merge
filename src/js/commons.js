@@ -49,7 +49,7 @@ const headersTemplate = [
 ];
 
 const cohortesOptions = [
-    "Grade",
+    "Grade TC",
     "Évaluation Hebdo 1: Évaluation (notée)", // 5
     "Évaluation Hebdo 2: Évaluation (notée)",
     "Évaluation Hebdo 3: Évaluation (notée)",

@@ -419,7 +419,7 @@ const headersTemplate = [
 ];
 
 const cohortesOptions = [
-    "Grade",
+    "Grade TC",
     "Évaluation Hebdo 1: Évaluation (notée)", // 5
     "Évaluation Hebdo 2: Évaluation (notée)",
     "Évaluation Hebdo 3: Évaluation (notée)",
@@ -1337,28 +1337,6 @@ function launchTab(jsonFromCSV, absences) {
         columnNames = null;
     }
 
-    // document.getElementById('showAll-coll').onclick = function() {
-    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-    //     setTimeout(() => {
-    //         headers.forEach(header => {
-    //             table.showColumn(header);
-    //         });
-    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-    //     }, 10)
-    // }
-
-    // document.getElementById('hideAll-coll').onclick = function() {
-    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-    //     setTimeout(() => {
-    //         headersHidden.forEach(header => {
-    //             table.hideColumn(header);
-    //         });
-    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-    //         document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
-    //         table.redraw();
-    //     }, 10)
-    // }
-
     document.getElementById('showConcat-col').onclick = function () {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         if (this.dataset.state === "without") {
@@ -1439,7 +1417,6 @@ function launchTab(jsonFromCSV, absences) {
     };
 
     setTimeout(() => {
-        console.log(absences);
         if (absences > 0)
             document.getElementById('absences').innerHTML = absences;
     }, 10);
@@ -1458,8 +1435,6 @@ function launchTab(jsonFromCSV, absences) {
                 show: "afficher",
                 annuler: true
             };
-
-        // console.log(type, buttons);
 
         var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
         tab += '<thead><tr>';
@@ -1480,10 +1455,6 @@ function launchTab(jsonFromCSV, absences) {
         });
         tab += '</tbody></table>';
 
-        // Réinitialise le premier <td> dans les titres par un <th>
-        // $('table.pvtTable thead tr th:first-child').prepend('<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="all"/>');
-
-        // console.log($.parseHTML(extraTable)[0])
         html.appendChild($.parseHTML(tab)[0]);
 
         setTimeout(() => {
@@ -1527,39 +1498,33 @@ function launchTab(jsonFromCSV, absences) {
                 }
             });
 
-        // prettyDefault(title, text, html, "", "sweetalert-auto");
         return true;
     }
 
     return true;
 } // FIN DE LAUNCHtAB
 function getDetailsCohortes(data, selected, cohortTitle) {
-
-    var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
-    var testPoint = function (d) {
-        return patternPoint.test(d) ? d.replace(/\./, ",") : d;
-    }
     var nestedCohortes = d3.nest()
         .key(d => d[cohortTitle])
         .rollup(v => {
-            var gradesFull = v.map(d => (isNaN(parseFloat(d[selected]))) ? 0 : Math.round(parseFloat(d[selected]) * 100) / 100);
-            gradesFull.sort();
-            var grades = filter_array(gradesFull);
+            var values = filter_array(v.map(d => (isNaN(parseFloat(d[selected]))) ? 0 : Math.round(parseFloat(d[selected]) * 100) / 100).sort());
+            var participants = v.length;
+            var actifs = v.filter(d => d["Grade TC"] !== "").length;
 
-            var median = grades.length >= 1 ? parseFloat(d3.median(grades)) : 0,
-                min = grades.length >= 1 ? parseFloat(d3.min(grades)) : 0,
-                max = grades.length >= 1 ? parseFloat(d3.max(grades)) : 0,
-                avg = grades.length >= 1 ? parseFloat(d3.mean(grades)) : 0,
-                quartileFirst = grades.length > 1 ? parseFloat(d3.quantile(grades, 0.25)) : 0,
-                quartileThird = grades.length > 1 ? parseFloat(d3.quantile(grades, 0.75)) : 0,
-                decileFirst = grades.length > 1 ? parseFloat(d3.quantile(grades, 0.1)) : 0,
-                decileLast = grades.length > 1 ? parseFloat(d3.quantile(grades, 0.9)) : 0,
+            var median = values.length >= 1 ? parseFloat(d3.median(values)) : 0,
+                min = values.length >= 1 ? parseFloat(d3.min(values)) : 0,
+                max = values.length >= 1 ? parseFloat(d3.max(values)) : 0,
+                avg = values.length >= 1 ? parseFloat(d3.mean(values)) : 0,
+                quartileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.25)) : 0,
+                quartileThird = values.length > 1 ? parseFloat(d3.quantile(values, 0.75)) : 0,
+                decileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.1)) : 0,
+                decileLast = values.length > 1 ? parseFloat(d3.quantile(values, 0.9)) : 0,
                 // rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
-                variance = grades.length > 1 ? parseFloat(d3.variance(grades)) : 0,
-                deviation = grades.length > 1 ? parseFloat(d3.deviation(grades)) : 0;
+                variance = values.length > 1 ? parseFloat(d3.variance(values)) : 0,
+                deviation = values.length > 1 ? parseFloat(d3.deviation(values)) : 0;
             return {
-                gradesFull: gradesFull.length,
-                grades: grades.length,
+                participants: participants,
+                actifs: actifs,
                 min: min !== 0 ? min.toFixed(2) : "",
                 max: max !== 0 ? max.toFixed(2) : "",
                 avg: avg !== 0 ? avg.toFixed(2) : "",
@@ -1575,22 +1540,22 @@ function getDetailsCohortes(data, selected, cohortTitle) {
         })
         .entries(data);
 
+    // console.log(nestedCohortes);
 
     var cohortesHtml = [
         ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
-            "9ème décile", "variance", "écart-type"
+            "9ème décile", "variance", "écart-type" // , "rapport interdécile"
         ]
     ];
 
     nestedCohortes.forEach(obj => {
-        var k = obj.key;
+        var k = obj.key ? obj.key : "hors cohortes";
         var v = obj.value;
-        var grades = v.grades;
-        cohortesHtml.push([k, v.gradesFull, v.grades, v.min, v.max, v.avg, v.median, v.quartileFirst, v.quartileThird,
-            v.decileFirst, v.decileLast, v.variance, v.deviation
+        cohortesHtml.push([k, v.participants, v.actifs, v.min, v.max, v.avg, v.median, v.quartileFirst, v.quartileThird,
+            v.decileFirst, v.decileLast, v.variance, v.deviation // v.rapportD9D1,
         ]);
     })
-
+    // console.log(cohortesHtml);
     return cohortesHtml;
 }
 

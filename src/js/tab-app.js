@@ -238,28 +238,6 @@ function launchTab(jsonFromCSV, absences) {
         columnNames = null;
     }
 
-    // document.getElementById('showAll-coll').onclick = function() {
-    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-    //     setTimeout(() => {
-    //         headers.forEach(header => {
-    //             table.showColumn(header);
-    //         });
-    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-    //     }, 10)
-    // }
-
-    // document.getElementById('hideAll-coll').onclick = function() {
-    //     document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-    //     setTimeout(() => {
-    //         headersHidden.forEach(header => {
-    //             table.hideColumn(header);
-    //         });
-    //         document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
-    //         document.getElementById('showConcat-col').firstChild.classList.replace("fa-grip-lines", "fa-grip-lines-vertical");
-    //         table.redraw();
-    //     }, 10)
-    // }
-
     document.getElementById('showConcat-col').onclick = function () {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
         if (this.dataset.state === "without") {
@@ -340,7 +318,6 @@ function launchTab(jsonFromCSV, absences) {
     };
 
     setTimeout(() => {
-        console.log(absences);
         if (absences > 0)
             document.getElementById('absences').innerHTML = absences;
     }, 10);
@@ -359,8 +336,6 @@ function launchTab(jsonFromCSV, absences) {
                 show: "afficher",
                 annuler: true
             };
-
-        // console.log(type, buttons);
 
         var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
         tab += '<thead><tr>';
@@ -381,10 +356,6 @@ function launchTab(jsonFromCSV, absences) {
         });
         tab += '</tbody></table>';
 
-        // Réinitialise le premier <td> dans les titres par un <th>
-        // $('table.pvtTable thead tr th:first-child').prepend('<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="all"/>');
-
-        // console.log($.parseHTML(extraTable)[0])
         html.appendChild($.parseHTML(tab)[0]);
 
         setTimeout(() => {
@@ -428,7 +399,6 @@ function launchTab(jsonFromCSV, absences) {
                 }
             });
 
-        // prettyDefault(title, text, html, "", "sweetalert-auto");
         return true;
     }
 
