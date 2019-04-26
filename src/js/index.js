@@ -48,8 +48,7 @@ function getDataFiles(file, fileNames) {
         reader.onload = (event) => {
             var textFromFileLoaded = event.target.result;
             var charset = jschardet.detect(textFromFileLoaded);
-            if (regexAllSPE.test(file.name))
-                console.log(file.name.match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, ""), " => ", charset.encoding);
+
             let dataByFile = {},
                 flag;
             Papa.parse(textFromFileLoaded, {

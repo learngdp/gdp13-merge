@@ -106,8 +106,7 @@ function getDataFiles(file, fileNames) {
         reader.onload = (event) => {
             var textFromFileLoaded = event.target.result;
             var charset = jschardet.detect(textFromFileLoaded);
-            if (regexAllSPE.test(file.name))
-                console.log(file.name.match(regexAllSPE)[0].replace(/[\d+_]/g, '').replace(/SPE\-/, ""), " => ", charset.encoding);
+
             let dataByFile = {},
                 flag;
             Papa.parse(textFromFileLoaded, {
@@ -616,21 +615,26 @@ function tableOptions(data, columns) {
             }
             return groupTitle;
         },
-        groupContext: function (e, group) {
+        groupContext: function(e, group) {
             e.preventDefault();
             var inputGroup = document.getElementById('groupBy-input').value;
-            inputGroup = inputGroup.split('>').map(el => el.trim());
-            var rowsData = [];
+            var fields = inputGroup.split('>').map(el => el.trim());
             var subGroups = group.getSubGroups();
             var groupElement = group.getElement();
+            var columnsVisible = [];
+            group.getTable().getColumns().forEach(column => {
+                if (column.getVisibility())
+                    columnsVisible.push(column.getField());
+            });
+            var rowsData = [];
             if (subGroups.length === 0) {
                 var rows = group.getRows().forEach(row => {
-                    rowsData.push(row.getData());
+                    rowsData.push(rowsDataVisible(columnsVisible, row.getData()));
                 });
-                var parentGroup = inputGroup;
+                var parentGroup = fields;
                 var key = group.getKey();
                 rowsData = d3.csvParseRows(Papa.unparse(rowsData));
-                exportCSVDefault(rowsData, inputGroup.join('_') + "_" + key);
+                exportCSVDefault(rowsData, fields.join('_') + "_" + key);
             } else {
                 groupElement.classList.add("shaker");
                 setTimeout(() => {
@@ -641,15 +645,14 @@ function tableOptions(data, columns) {
     }
 }
 
-// *** à revoir
-function getGroup(group) {
-    var groups = [];
-    while (group.getSubGroups()) {
-        group.getSubGroups().forEach(subGroup => {
-            groups.push(subGroup);
-        });
-    };
-    return groups;
+function rowsDataVisible(columnsVisible, rowData) {
+    var obj = {};
+    for (var key in rowData) {
+        if (columnsVisible.indexOf(key) !== -1) {
+            obj[key] = rowData[key];
+        }
+    }
+    return obj;
 }
 
 function setDataColumns(headersColumns) {
@@ -1526,7 +1529,7 @@ function getDetailsCohortes(data, selected, cohortTitle) {
                 quartileThird = values.length > 1 ? parseFloat(d3.quantile(values, 0.75)) : 0,
                 decileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.1)) : 0,
                 decileLast = values.length > 1 ? parseFloat(d3.quantile(values, 0.9)) : 0,
-                // rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
+                rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
                 variance = values.length > 1 ? parseFloat(d3.variance(values)) : 0,
                 deviation = values.length > 1 ? parseFloat(d3.deviation(values)) : 0;
             return {
@@ -1540,18 +1543,18 @@ function getDetailsCohortes(data, selected, cohortTitle) {
                 quartileThird: quartileThird !== 0 ? quartileThird.toFixed(2) : "",
                 decileFirst: decileFirst !== 0 ? decileFirst.toFixed(2) : "",
                 decileLast: decileLast !== 0 ? decileLast.toFixed(2) : "",
-                // rapportD9D1: rapportD9D1 !== 0 ? rapportD9D1.toFixed(2) : "",
+                rapportD9D1: rapportD9D1 !== 0 ? rapportD9D1.toFixed(2) : "",
                 variance: variance !== 0 ? variance.toFixed(2) : "",
                 deviation: deviation !== 0 ? deviation.toFixed(2) : ""
             };
         })
         .entries(data);
 
-    // console.log(nestedCohortes);
+    console.log(nestedCohortes);
 
     var cohortesHtml = [
         ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
-            "9ème décile", "variance", "écart-type" // , "rapport interdécile"
+            "9ème décile", "rapport (d9/d1)", "variance", "écart-type"
         ]
     ];
 
@@ -1559,10 +1562,10 @@ function getDetailsCohortes(data, selected, cohortTitle) {
         var k = obj.key ? obj.key : "hors cohortes";
         var v = obj.value;
         cohortesHtml.push([k, v.participants, v.actifs, v.min, v.max, v.avg, v.median, v.quartileFirst, v.quartileThird,
-            v.decileFirst, v.decileLast, v.variance, v.deviation // v.rapportD9D1,
+            v.decileFirst, v.decileLast, v.rapportD9D1, v.variance, v.deviation
         ]);
     })
-    // console.log(cohortesHtml);
+
     return cohortesHtml;
 }
 

@@ -74,21 +74,26 @@ function tableOptions(data, columns) {
             }
             return groupTitle;
         },
-        groupContext: function (e, group) {
+        groupContext: function(e, group) {
             e.preventDefault();
             var inputGroup = document.getElementById('groupBy-input').value;
-            inputGroup = inputGroup.split('>').map(el => el.trim());
-            var rowsData = [];
+            var fields = inputGroup.split('>').map(el => el.trim());
             var subGroups = group.getSubGroups();
             var groupElement = group.getElement();
+            var columnsVisible = [];
+            group.getTable().getColumns().forEach(column => {
+                if (column.getVisibility())
+                    columnsVisible.push(column.getField());
+            });
+            var rowsData = [];
             if (subGroups.length === 0) {
                 var rows = group.getRows().forEach(row => {
-                    rowsData.push(row.getData());
+                    rowsData.push(rowsDataVisible(columnsVisible, row.getData()));
                 });
-                var parentGroup = inputGroup;
+                var parentGroup = fields;
                 var key = group.getKey();
                 rowsData = d3.csvParseRows(Papa.unparse(rowsData));
-                exportCSVDefault(rowsData, inputGroup.join('_') + "_" + key);
+                exportCSVDefault(rowsData, fields.join('_') + "_" + key);
             } else {
                 groupElement.classList.add("shaker");
                 setTimeout(() => {
@@ -99,15 +104,14 @@ function tableOptions(data, columns) {
     }
 }
 
-// *** à revoir
-function getGroup(group) {
-    var groups = [];
-    while (group.getSubGroups()) {
-        group.getSubGroups().forEach(subGroup => {
-            groups.push(subGroup);
-        });
-    };
-    return groups;
+function rowsDataVisible(columnsVisible, rowData) {
+    var obj = {};
+    for (var key in rowData) {
+        if (columnsVisible.indexOf(key) !== -1) {
+            obj[key] = rowData[key];
+        }
+    }
+    return obj;
 }
 
 function setDataColumns(headersColumns) {

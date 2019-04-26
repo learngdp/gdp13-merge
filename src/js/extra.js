@@ -14,7 +14,7 @@ function getDetailsCohortes(data, selected, cohortTitle) {
                 quartileThird = values.length > 1 ? parseFloat(d3.quantile(values, 0.75)) : 0,
                 decileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.1)) : 0,
                 decileLast = values.length > 1 ? parseFloat(d3.quantile(values, 0.9)) : 0,
-                // rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
+                rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
                 variance = values.length > 1 ? parseFloat(d3.variance(values)) : 0,
                 deviation = values.length > 1 ? parseFloat(d3.deviation(values)) : 0;
             return {
@@ -28,18 +28,18 @@ function getDetailsCohortes(data, selected, cohortTitle) {
                 quartileThird: quartileThird !== 0 ? quartileThird.toFixed(2) : "",
                 decileFirst: decileFirst !== 0 ? decileFirst.toFixed(2) : "",
                 decileLast: decileLast !== 0 ? decileLast.toFixed(2) : "",
-                // rapportD9D1: rapportD9D1 !== 0 ? rapportD9D1.toFixed(2) : "",
+                rapportD9D1: rapportD9D1 !== 0 ? rapportD9D1.toFixed(2) : "",
                 variance: variance !== 0 ? variance.toFixed(2) : "",
                 deviation: deviation !== 0 ? deviation.toFixed(2) : ""
             };
         })
         .entries(data);
 
-    // console.log(nestedCohortes);
+    console.log(nestedCohortes);
 
     var cohortesHtml = [
         ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
-            "9ème décile", "variance", "écart-type" // , "rapport interdécile"
+            "9ème décile", "rapport (d9/d1)", "variance", "écart-type"
         ]
     ];
 
@@ -47,10 +47,10 @@ function getDetailsCohortes(data, selected, cohortTitle) {
         var k = obj.key ? obj.key : "hors cohortes";
         var v = obj.value;
         cohortesHtml.push([k, v.participants, v.actifs, v.min, v.max, v.avg, v.median, v.quartileFirst, v.quartileThird,
-            v.decileFirst, v.decileLast, v.variance, v.deviation // v.rapportD9D1,
+            v.decileFirst, v.decileLast, v.rapportD9D1, v.variance, v.deviation
         ]);
     })
-    // console.log(cohortesHtml);
+
     return cohortesHtml;
 }
 
