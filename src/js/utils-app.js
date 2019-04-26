@@ -211,6 +211,7 @@ function setDataColumns(headersColumns) {
                 id: i,
                 title: name,
                 field: column,
+                formatter: "numberfmt",
                 headerFilter: "input",
                 headerFilterPlaceholder: "< <= = >= >",
                 // headerFilterFunc: ">=",
@@ -291,22 +292,21 @@ function setDataColumns(headersColumns) {
 function customHeaderFilter(headerValue, rowValue, rowData, filterParams) {
     var accept = (value, motif) => value.replace(motif, "").trim();
     if ( /(\>\=)/.test(headerValue) ) {
-        return rowValue >= accept(headerValue, ">=");
+        return +rowValue >= +accept(headerValue, ">=");
     } else if ( /(\<\=)/.test(headerValue) ) {
-        return rowValue <= accept(headerValue, "<=");
+        return +rowValue <= +accept(headerValue, "<=");
     } else if ( /(\!\=)/.test(headerValue) ) {
-        return rowValue != accept(headerValue, "!=");
+        return +rowValue != +accept(headerValue, "!=");
     } else if ( /\>(?!=)/.test(headerValue) ) {
-        return rowValue > accept(headerValue, ">");
+        return +rowValue > +accept(headerValue, ">");
     } else if ( /\<(?!=)/.test(headerValue) ) {
-        return rowValue < accept(headerValue, "<");
+        return +rowValue < +accept(headerValue, "<");
     } else if ( /(?<!\<|>)\=(?!\>)/.test(headerValue) ) {
-        return rowValue === accept(headerValue, "=");
+        return +rowValue === +accept(headerValue, "=");
     }
     else {
         return false
     }
-
     return true;
 }
 
