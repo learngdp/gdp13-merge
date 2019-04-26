@@ -748,7 +748,20 @@ function setDataColumns(headersColumns) {
                     groupByField(column.getField());
                 }
             });
-        } else if (i === 8 || i === 12 || i === 18) { // nb SPE validées
+        } else if (i === 12) { // nb SPE validées
+            columns.push({
+                id: i,
+                title: name,
+                field: column,
+                headerFilter: "input",
+                headerFilterPlaceholder: "< <= = >= >",
+                headerFilterFunc: customHeaderFilter,
+                headerContext: function(e, column) {
+                    e.preventDefault();
+                    groupByField(column.getField());
+                }
+            });
+        } else if (i === 8 || i === 18) { // nb SPE validées
             columns.push({
                 id: i,
                 title: name,
@@ -756,13 +769,7 @@ function setDataColumns(headersColumns) {
                 formatter: "numberfmt",
                 headerFilter: "input",
                 headerFilterPlaceholder: "< <= = >= >",
-                // headerFilterFunc: ">=",
                 headerFilterFunc: customHeaderFilter,
-                // headerFilterParams: {
-                //     min: 0,
-                //     max: 15,
-                //     step: 1
-                // },
                 headerContext: function(e, column) {
                     e.preventDefault();
                     groupByField(column.getField());
