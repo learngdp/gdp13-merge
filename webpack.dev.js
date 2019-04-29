@@ -8,8 +8,8 @@ const result = concat(
             './src/js/index.js',
             './src/js/commons.js',
             './src/js/utils-app.js',
+            './src/js/final-app.js',
             './src/js/tab-app.js',
-            './src/js/extra.js',
             './src/js/guide.js'
         ],
         './src/concatened.js')

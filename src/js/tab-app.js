@@ -122,7 +122,14 @@ function globalReport(jsonData, dataMappage) {
     }
 
     document.getElementById('finalStandard-btn').onclick = function (e) {
-        tableauFinalStandard(dataFromCSV, dataMappage);
+        document.getElementById('tableApp-div').classList.add('hidden');
+        document.getElementById('tableFinal-div').classList.remove('hidden');
+        if (this.dataset.switch !== "done") {
+            document.getElementById('spinnerLoadFinal-span').classList.replace('hidden', 'inline');
+            setTimeout(() => {
+                launchFinalTable(dataFromCSV, dataMappage);
+            }, 1000);
+        }
     }
 
     // *** EXTRA COHORTES
@@ -285,26 +292,26 @@ function launchTab(jsonFromCSV, absences) {
 
     document.getElementById('exportCSVComma-btn').onclick = function (e) {
         document.getElementById('spinnerLoad-span').classList.replace("hidden", "inline");
-        var dataExport = dataFiltered();
-        dataExport.slice(1, dataExport.length).forEach(row => {
-            for (var i = 0, lgi = row.length; i < lgi; i++) {
-                if (row[i].indexOf('.') !== -1 && !isNaN(parseFloat(row[i])))
-                    row[i] = parseFloat(row[i]).toLocaleString("fr-FR");
-            }
-        });
         setTimeout(() => {
+            var dataExport = getDataFiltered();
+            dataExport.slice(1, dataExport.length).forEach(row => {
+                for (var i = 0, lgi = row.length; i < lgi; i++) {
+                    if (row[i].indexOf('.') !== -1 && !isNaN(parseFloat(row[i])))
+                        row[i] = parseFloat(row[i]).toLocaleString("fr-FR");
+                }
+            });
             exportCSVDefault(dataExport, "global_reportTC");
             document.getElementById('spinnerLoad-span').classList.replace("inline", "hidden");
         }, 100);
     }
 
-    var dataFiltered = function () {
+    var getDataFiltered = function () {
         var filteredData = table.getData(true);
         var selectedData = table.getSelectedData();
-        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value));
+        var filterSelectedData = filteredData.filter(value => -1 !== selectedData.indexOf(value))
 
-        // var columnsVisible = columns.map(column => column.field);
         var columnsVisible = columns.filter((column, i) => i < 38).map(column => column.field);
+
         var dataFiltered = filteredData.map(item => {
             return Object.keys(item)
                 .filter(key => columnsVisible.includes(key))
@@ -322,85 +329,159 @@ function launchTab(jsonFromCSV, absences) {
             document.getElementById('absences').innerHTML = absences;
     }, 10);
 
-    // création simple de table html pour sweetALert pvtTable
-    var createTableColumns = function (headers, data, className, table, type) {
-        var input0 = '<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em; margin-top: -0.7em" id="checkAll"/>';
-        var html = document.createElement("div"),
-            p = document.createElement("p"),
-            title = "",
-            text = "",
-            buttons = (type === "hide") ? {
-                hide: "masquer",
-                annuler: true
-            } : {
-                show: "afficher",
-                annuler: true
-            };
-
-        var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
-        tab += '<thead><tr>';
-        headers.forEach((header, i) => {
-            if (i === 0) {
-                tab += '<th id="th_' + i + '">' + input0 + '</th>';
-            } else {
-                tab += '<th id="th_' + i + '">' + header + '</th>';
-            }
-        });
-        tab += '</tr></thead>';
-        tab += '<tbody>';
-        data.forEach(name => {
-            tab += '<tr>';
-            tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
-            tab += '<td>' + name + '</td>';
-            tab += '</tr>';
-        });
-        tab += '</tbody></table>';
-
-        html.appendChild($.parseHTML(tab)[0]);
-
-        setTimeout(() => {
-            document.getElementById('checkAll').addEventListener('click', function (e) {
-                $(':checkbox').prop('checked', this.checked);
-            }, false);
-        }, 10);
-
-        swal({
-                title: title,
-                text: text,
-                content: html,
-                className: "sweetalert-auto",
-                buttons: buttons,
-            })
-            .then((value) => {
-                switch (value) {
-                    case "hide":
-                        var inputElements = document.getElementsByClassName('checkboxColumn');
-                        for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
-                            // console.log(inputElements[i].value);
-                            if (inputElements[i].checked) {
-                                table.hideColumn(inputElements[i].value);
-                            }
-                        }
-                        swal("Terminé !", "", "success");
-                        break;
-
-                    case "show":
-                        var inputElements = document.getElementsByClassName('checkboxColumn');
-                        for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
-                            if (inputElements[i].checked) {
-                                table.showColumn(inputElements[i].value);
-                            }
-                        }
-                        swal("Terminé !", "", "success");
-                        break;
-
-                    default:
-                        break;
-                }
-            });
-
-        return true;
-    }
-
     return true;
 } // FIN DE LAUNCHtAB
+
+// création simple de table html pour sweetALert pvtTable
+var createTableColumns = function (headers, data, className, table, type) {
+    var input0 = '<input type="checkbox" style="width:15px; opacity: 1; height: 1.5em; margin-top: -0.7em" id="checkAll"/>';
+    var html = document.createElement("div"),
+        p = document.createElement("p"),
+        title = "",
+        text = "",
+        buttons = (type === "hide") ? {
+            hide: "masquer",
+            annuler: true
+        } : {
+            show: "afficher",
+            annuler: true
+        };
+
+    var tab = '<table class="' + className + ' tableForSweet" style="margin:5px auto">';
+    tab += '<thead><tr>';
+    headers.forEach((header, i) => {
+        if (i === 0) {
+            tab += '<th id="th_' + i + '">' + input0 + '</th>';
+        } else {
+            tab += '<th id="th_' + i + '">' + header + '</th>';
+        }
+    });
+    tab += '</tr></thead>';
+    tab += '<tbody>';
+    data.forEach(name => {
+        tab += '<tr>';
+        tab += '<td><input type="checkbox" style="width:15px; opacity: 1; height: 1.5em" class="checkboxColumn" value="' + name + '"/></td>';
+        tab += '<td>' + name + '</td>';
+        tab += '</tr>';
+    });
+    tab += '</tbody></table>';
+
+    html.appendChild($.parseHTML(tab)[0]);
+
+    setTimeout(() => {
+        document.getElementById('checkAll').addEventListener('click', function (e) {
+            $(':checkbox').prop('checked', this.checked);
+        }, false);
+    }, 10);
+
+    swal({
+            title: title,
+            text: text,
+            content: html,
+            className: "sweetalert-auto",
+            buttons: buttons,
+        })
+        .then((value) => {
+            switch (value) {
+                case "hide":
+                    var inputElements = document.getElementsByClassName('checkboxColumn');
+                    for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
+                        // console.log(inputElements[i].value);
+                        if (inputElements[i].checked) {
+                            table.hideColumn(inputElements[i].value);
+                        }
+                    }
+                    swal("Terminé !", "", "success");
+                    break;
+
+                case "show":
+                    var inputElements = document.getElementsByClassName('checkboxColumn');
+                    for (var i = 0, lgi = inputElements.length; i < lgi; ++i) {
+                        if (inputElements[i].checked) {
+                            table.showColumn(inputElements[i].value);
+                        }
+                    }
+                    swal("Terminé !", "", "success");
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
+    return true;
+}
+
+function getDetailsCohortes(data, selected, cohortTitle) {
+    var nestedCohortes = d3.nest()
+        .key(d => d[cohortTitle])
+        .rollup(v => {
+            var values = filter_array(v.map(d => (isNaN(parseFloat(d[selected]))) ? 0 : Math.round(parseFloat(d[selected]) * 100) / 100).sort());
+            var participants = v.length;
+            var actifs = v.filter(d => d["Grade TC"] !== "").length;
+
+            var median = values.length >= 1 ? parseFloat(d3.median(values)) : 0,
+                min = values.length >= 1 ? parseFloat(d3.min(values)) : 0,
+                max = values.length >= 1 ? parseFloat(d3.max(values)) : 0,
+                avg = values.length >= 1 ? parseFloat(d3.mean(values)) : 0,
+                quartileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.25)) : 0,
+                quartileThird = values.length > 1 ? parseFloat(d3.quantile(values, 0.75)) : 0,
+                decileFirst = values.length > 1 ? parseFloat(d3.quantile(values, 0.1)) : 0,
+                decileLast = values.length > 1 ? parseFloat(d3.quantile(values, 0.9)) : 0,
+                rapportD9D1 = (decileFirst !== 0 && decileLast !== 0) ? (decileLast / decileFirst) : 0,
+                variance = values.length > 1 ? parseFloat(d3.variance(values)) : 0,
+                deviation = values.length > 1 ? parseFloat(d3.deviation(values)) : 0;
+            return {
+                participants: participants,
+                actifs: actifs,
+                min: min !== 0 ? min.toFixed(2) : "",
+                max: max !== 0 ? max.toFixed(2) : "",
+                avg: avg !== 0 ? avg.toFixed(2) : "",
+                median: median !== 0 ? median.toFixed(2) : "",
+                quartileFirst: quartileFirst !== 0 ? quartileFirst.toFixed(2) : "",
+                quartileThird: quartileThird !== 0 ? quartileThird.toFixed(2) : "",
+                decileFirst: decileFirst !== 0 ? decileFirst.toFixed(2) : "",
+                decileLast: decileLast !== 0 ? decileLast.toFixed(2) : "",
+                rapportD9D1: rapportD9D1 !== 0 ? rapportD9D1.toFixed(2) : "",
+                variance: variance !== 0 ? variance.toFixed(2) : "",
+                deviation: deviation !== 0 ? deviation.toFixed(2) : ""
+            };
+        })
+        .entries(data);
+
+    console.log(nestedCohortes);
+
+    var cohortesHtml = [
+        ["cohorte", "participants", "actifs", "min", "max", "moyenne", "médiane", "1er quartile", "3ème quartile", "1er décile",
+            "9ème décile", "rapport (d9/d1)", "variance", "écart-type"
+        ]
+    ];
+
+    nestedCohortes.forEach(obj => {
+        var k = obj.key ? obj.key : "hors cohortes";
+        var v = obj.value;
+        cohortesHtml.push([k, v.participants, v.actifs, v.min, v.max, v.avg, v.median, v.quartileFirst, v.quartileThird,
+            v.decileFirst, v.decileLast, v.rapportD9D1, v.variance, v.deviation
+        ]);
+    })
+
+    return cohortesHtml;
+}
+
+// for extra data
+var getExtraData = function (extraTitle, extraDataHtml, button, selected) {
+    var text;
+    if (extraDataHtml.length > 1 && extraDataHtml[0].length === 2) { // p.innerHTML = extraDataHtml.map(arr => arr.join(" | ")).join(", ");
+        text = (extraDataHtml.length - 1) + ' ' + extraTitle;
+        var extraTable = createTableExtra(extraDataHtml.slice(1, extraDataHtml.length), extraDataHtml[0], "pvtTable", text, extraTitle);
+    } else if (extraDataHtml.length > 1 && extraDataHtml[0].length >= 9) {
+        // p.innerHTML = extraDataHtml.map(arr => arr.join(" | ")).join(", ");
+        text = (extraDataHtml.length - 1) + ' ' + extraTitle + ' => ' + selected;
+        var extraTable = createTableExtra(extraDataHtml.slice(1, extraDataHtml.length), extraDataHtml[0], "pvtTable", text, extraTitle);
+    } else {
+        p.innerHTML = "";
+        html.appendChild(p);
+        text = 0 + ' ' + extraTitle + ' trouvé (recherche par "Student ID")';
+        prettyDefault(title, text, html, "success", text, extraTitle);
+    }
+}
