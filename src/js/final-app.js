@@ -1,14 +1,11 @@
 function prepareFinalStandard(data, dataMappage) {
-    // console.log(data);
-
     // IMPORTANT : BIEN CONSERVER L'ORDRE DANS "headersStandard" qui est ensuite repris dans l
     var headersStandard = [
-        "Student ID", // 0
-        "Email", // 1
+        "Student ID",
+        "Email",
         "Étudiant",
         "Mail d'inscription",
-        // "Absent de la Plateforme",
-        "Cohorte", // cohorte 31
+        "Cohorte",
         "Classique",
         "Avancé",
         "S1 (%)", "S1 (/20)",
@@ -64,7 +61,6 @@ function prepareFinalStandard(data, dataMappage) {
     var dataSpec = data.slice(1, data.length).sort(function(a, b) {
         return a[0] - b[0];
     });
-    // console.log(data[0], headersSpe, dataSpec);
 
     // Test pour vérifier le format décimal dans le jeu de données... à optimiser
     var patternPoint = /^[0-9]+([.][0-9]+)?%?$/;
@@ -74,7 +70,6 @@ function prepareFinalStandard(data, dataMappage) {
 
     var testComma = [].concat.apply([], dataSpec.map(function(el) {
         return el.filter(function(el) {
-            // return [], el.filter(function(el) { // à voir faute de frappe ou autres ?
             return patternPoint.test(el) && number_test(el.valueOf()) && Number.isInteger(parseInt(el));
         });
     }));
@@ -84,10 +79,7 @@ function prepareFinalStandard(data, dataMappage) {
     var examenFinal = dataSpec.map((row) => row.slice(12, 13).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
     var rangeDevoirs = dataSpec.map((row) => row.slice(13, 16).map((el) => (isNaN(parseFloat(el))) ? 0 : parseFloat(el)));
 
-    // console.log(rangeClassic, examenFinal, rangeDevoirs);
-
     var name, cohorte, countSpe, classic2Modules, classic3devoirs;
-    // var patternSpe = /\d+\:\s{1}\[\w+\]/gi;
     var pass70 = 0.70;
 
     // // if (testComma.length > 0) {
@@ -118,7 +110,6 @@ function prepareFinalStandard(data, dataMappage) {
 
         // Ajout colonne vide pour mappage nom
         var checkEmail = dataMappage.find(item => {
-            // console.log(item.id, dataSpec[i][0]);
             return item.id === dataSpec[i][0];
         });
         // console.log(checkEmail);
@@ -134,9 +125,6 @@ function prepareFinalStandard(data, dataMappage) {
             dataSpec[i].splice(5, 1, "OUI") : dataSpec[i].splice(5, 1, "NON");
         classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
-
-        // console.log(dataSpec[i][0], dataSpec[i][7], dataSpec[i][8], dataSpec[i][9], dataSpec[i][10]);
-
 
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
         (isNaN(parseFloat(dataSpec[i][7]))) ? dataSpec[i].push(""): dataSpec[i].push(pointToComma_FR(parseFloat(dataSpec[i][7] * 100).toFixed(2)) + '%'); // 100 (%)
@@ -213,14 +201,7 @@ function prepareFinalStandard(data, dataMappage) {
         (examenFinal[i][0] >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
-
-        // console.log(dataSpec[i]);
-
-        // if (i > 10)
-        //     break;
     }
-    // console.log(data[0]);
-    // suppression de la 1ère lignes de titres
     const dataComplete = data.slice(0);
     var dataFinalTable = dataComplete;
     dataFinalTable.splice(0, 1);
@@ -244,38 +225,43 @@ function launchFinalTable(data, dataMappage) {
 
     var jsonData = prepareFinalStandard(data, dataMappage);
 
+    var absences = 0;
+    jsonData.forEach(row => {
+        if (row["Étudiant"] === "Absent sur profile_info")
+            absences++;
+    });
+
     var classByColumn = function(arr, col) {
         var column = [],
             value;
         for (var i = 1, lgi = arr.length; i < lgi; i++) {
-            // value = (value !== undefined) ? value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, ''): "";
-            // console.log(value)
-            value = $.isNumeric(arr[i][col]) ? arr[i][col] : 0; //"number" : "string";
+            value = $.isNumeric(arr[i][col]) ? arr[i][col] : 0;
             column.push(value);
         }
-        return filter_array(column); // voir avec _.compact
+        return filter_array(column);
     }
 
     var headers = jsonData.columns;
-    var headersIds = headers.filter((header, i) => i > 0 && i < 5);
+
+
+    var headersIds = headers.filter((header, i) => i >= 0 && i <= 4);
     var headersAttestation = headers.filter((header, i) => i >= 5 && i < 7);
     var headersPC = headers.filter((header, i) => i >= 7 && i < 15);
     var headersExFinal = headers.filter((header, i) => i >= 15 && i < 17);
     var headersPA = headers.filter((header, i) => i >= 17 && i < 23);
     var headersSpe = headers.filter((header, i) => i >= 23 && i < 53);
     var headersSpeReussi = headers.filter((header, i) => i >= 53 && i < 56);
-    var headersEchecs = headers.filter((header, i) => i >= 56 && i < 60);
+    var headersEchecs = headers.filter((header, i) => i >= 56 && i <= 60);
 
     var headersGroups = [
-        [headers[0]],
-        { title: "Informations participants", columns: headersIds },
-        { title: "Attestation", columns: headersAttestation },
-        { title: "Parcours Classique (PC)", columns: headersPC },
-        { title: "Examen Final", columns: headersExFinal },
-        { title: "Parcours Avancé (PA)", columns: headersPA },
-        { title: "Modules de Spécialisation", columns: headersSpe },
-        { title: "Modules réussis", columns: headersSpeReussi },
-        { title: "Causes Échec", columns: headersEchecs }
+        { title: "Informations participants", columns: headersIds }, // 2
+        { title: "Attestation", columns: headersAttestation }, // 3
+        { title: "Parcours Classique (PC)", columns: headersPC }, // 4
+        { title: "Examen Final", columns: headersExFinal }, // 5
+        { title: "Parcours Avancé (PA)", columns: headersPA }, // 6
+        { title: "Modules de Spécialisation", columns: headersSpe }, // 7
+        { title: "Modules réussis", columns: headersSpeReussi }, // 8
+        { title: "Causes Échec", columns: headersEchecs } // 9
     ];
 
     var groupsTitle = [
@@ -290,9 +276,8 @@ function launchFinalTable(data, dataMappage) {
     ];
 
     var selectGroups = $('#groupsColumns-btn');
-    // suppression des options existantes
     selectGroups.find('option').remove();
-    // implémentation liste options complète voir dans fichier commons
+
     for (var i = 0, lgi = groupsTitle.length; i < lgi; i++) {
         selectGroups.append('<option value="' + groupsTitle[i] + '">' + groupsTitle[i] + '</option>')
     }
@@ -317,43 +302,48 @@ function launchFinalTable(data, dataMappage) {
                 type;
 
             if (i === 0) {
-                groupsColumns.push({
-                    id: i,
-                    title: group[0],
-                    field: group[0],
-                    frozen: true,
-                    headerFilter: "input",
-                    headerFilterPlaceholder: "...",
-                    cellContext: function(e, cell) {
-                        var rowData = Object.entries(cell.getRow().getData());
-                        // console.log(["entête", "valeur"], rowData, "pvtTable");
-                        createTable(["entête", "valeur"], rowData, "pvtTable");
-                        e.preventDefault();
-                    }
-                });
-            } else if (i === 1) {
-                group.columns.forEach(header => {
-                    columnType = classByColumn(jsonData, header);
-                    type = columnType.length > 0 ? "number" : "string"; //[...new Set(columnType)];
-
-                    columnByGroup.push({
+                group.columns.forEach((header, j) => {
+                    groupsColumns.push({
                         id: i,
                         title: header,
                         field: header,
+                        frozen: true,
+                        visible: header === "Étudiant" || header === "Cohorte" ? true : false,
                         headerFilter: "input",
                         headerFilterPlaceholder: "...",
+                        cellContext: j === 0 ? function(e, cell) {
+                            var rowData = Object.entries(cell.getRow().getData());
+                            // console.log(["entête", "valeur"], rowData, "pvtTable");
+                            createTable(["entête", "valeur"], rowData, "pvtTable");
+                            e.preventDefault();
+                        } : false
                     });
-
                 });
+            } else if (i === 1) {
                 groupsColumns.push({
                     title: group.title,
-                    columns: columnByGroup
+                    columns: [{
+                        title: "<span style='color:red'>TC + 2 modules</span>",
+                        columns: [{
+                            id: 0,
+                            title: group.columns[0],
+                            field: group.columns[0],
+                            headerFilter: "input",
+                            headerFilterPlaceholder: "...",
+                        }]
+                    }, {
+                        title: "<span style='color:red'>Classique + 3 devoirs</span>",
+                        columns: [{
+                            id: 1,
+                            title: group.columns[1],
+                            field: group.columns[1],
+                            headerFilter: "input",
+                            headerFilterPlaceholder: "...",
+                        }]
+                    }]
                 });
-            } else if (i === 3 || i === 5 || i === 6) {
+            } else if (i === 2) {
                 group.columns.forEach(header => {
-                    columnType = classByColumn(jsonData, header);
-                    type = columnType.length > 0 ? "number" : "string"; //[...new Set(columnType)];
-
                     columnByGroup.push({
                         id: i,
                         title: header,
@@ -367,7 +357,118 @@ function launchFinalTable(data, dataMappage) {
                 });
                 groupsColumns.push({
                     title: group.title,
-                    columns: columnByGroup
+                    columns: [{ title: "<span style='color:red'>70 % minimum</span>", columns: columnByGroup }]
+
+                });
+            } else if (i === 3) {
+                group.columns.forEach(header => {
+                    columnByGroup.push({
+                        id: i,
+                        title: header,
+                        field: header,
+                        headerFilter: "input",
+                        headerFilterPlaceholder: (type === "number") ? "< <= = >= >" : "...",
+                        headerFilterFunc: (type === "number") ? customHeaderFilter : false,
+                    });
+
+                });
+                groupsColumns.push({
+                    title: group.title,
+                    columns: [{ title: "<span style='color:red'>70 % minimum</span>", columns: columnByGroup }]
+
+                });
+            } else if (i === 4) {
+                group.columns.forEach(header => {
+                    columnByGroup.push({
+                        id: i,
+                        title: header,
+                        field: header,
+                        visible: false,
+                        headerFilter: "input",
+                        headerFilterPlaceholder: (type === "number") ? "< <= = >= >" : "...",
+                        headerFilterFunc: (type === "number") ? customHeaderFilter : false,
+                    });
+
+                });
+                groupsColumns.push({
+                    title: group.title,
+                    columns: [{ title: "<span style='color:red'>70 % minimum</span>", columns: columnByGroup }]
+
+                });
+            } else if (i === 5) {
+                group.columns.forEach(header => {
+                    columnByGroup.push({
+                        id: i,
+                        title: header,
+                        field: header,
+                        visible: false,
+                        headerFilter: "input",
+                        headerFilterPlaceholder: (type === "number") ? "< <= = >= >" : "...",
+                        headerFilterFunc: (type === "number") ? customHeaderFilter : false,
+                    });
+
+                });
+                groupsColumns.push({
+                    title: group.title,
+                    columns: [{ title: "<span style='color:red'>70 % min par module avec 2 modules minimum réussis</span>", columns: columnByGroup }]
+
+                });
+            } else if (i === 6) {
+                group.columns.forEach(header => {
+                    columnByGroup.push({
+                        id: i,
+                        title: header,
+                        field: header,
+                        headerFilter: "input",
+                        headerFilterPlaceholder: (type === "number") ? "< <= = >= >" : "...",
+                        headerFilterFunc: (type === "number") ? customHeaderFilter : false,
+                    });
+
+                });
+                groupsColumns.push({
+                    title: group.title,
+                    columns: [{ title: "<span style='color:red'>2 modules minimum</span>", columns: columnByGroup }]
+
+                });
+            } else if (i === 7) {
+
+                group.columns.forEach((header, j) => {
+                    if (j > 0 && j < 4)
+                        columnByGroup.push({
+                            id: i,
+                            title: header,
+                            field: header,
+                            headerFilter: "input",
+                            headerFilterPlaceholder: "...",
+                        });
+
+                });
+                groupsColumns.push({
+                    title: group.title,
+                    columns: [{
+                            title: "<span style='color:red'>Nombre < 2</span>",
+                            columns: [{
+                                id: 0,
+                                title: group.columns[0],
+                                field: group.columns[0],
+                                headerFilter: "input",
+                                headerFilterPlaceholder: "...",
+                            }]
+                        }, {
+                            title: "<span style='color:red'>Score < à 70 %</span>",
+                            columns: columnByGroup
+                        }, {
+                            title: "<span style='color:red'>Nombre < 3</span>",
+                            columns: [{
+                                id: 4,
+                                title: group.columns[4],
+                                field: group.columns[4],
+                                headerFilter: "input",
+                                headerFilterPlaceholder: "...",
+                            }]
+                        }
+
+                    ]
                 });
             } else {
                 group.columns.forEach(header => {
@@ -402,27 +503,34 @@ function launchFinalTable(data, dataMappage) {
     footerContent += '<div style="margin-left: 4em;" class="inline">';
     footerContent += '<span>lignes: </span><span id="rowsCount-final" style="font-weight: 900"></span> (filtrée.s)';
     footerContent += '<span style="margin-left: 2em">sélection: </span><span id="rowSelected-final" style="font-weight: 900"></span> (ligne.s)';
+    footerContent += '<span style="margin-left: 2em">total absence.s: </span><span style="font-weight: 900; color:red">' + absences + '</span>';
     footerContent += '</div></div>';
 
     var finalTable = new Tabulator("#table-final", {
-        selectable: true, //make rows selectable
+        clipboard: true,
+        selectable: true,
         height: Math.round(window.innerHeight) - 55,
         virtualDomBuffer: 100000,
         data: jsonData,
         reactiveData: true,
-        // layout: "fitColumns", //fit columns to width of table (optional)
         tooltipsHeader: true,
-        // autoColumns: true,
         columns: columns,
         pagination: "local",
         paginationSize: 100,
         movableColumns: true,
-        // responsiveLayout: "hide", //hide columns that dont fit on the table
-        history: true, //allow undo and redo actions on the table
-        tooltips: true, //show tool tips on cells
+        history: true,
+        tooltips: true,
         placeholder: "Aucune donnée disponible",
         footerElement: footerContent,
         groupToggleElement: "header",
+
+        rowFormatter: function(row) {
+            if (row.getData()["Email"] !== row.getData()["Mail d'inscription"]) {
+                row.getCells()[1].getElement().style.backgroundColor = "#FFABAD";
+                row.getCells()[2].getElement().style.backgroundColor = "#FFABAD";
+                row.getCells()[3].getElement().style.backgroundColor = "#FFABAD";
+            }
+        },
         rowSelectionChanged: function(data, rows) {
             document.getElementById('rowSelected-final').innerHTML = data.length;
         },
@@ -430,28 +538,17 @@ function launchFinalTable(data, dataMappage) {
             document.getElementById('rowsCount-final').innerHTML = rows.length;
         },
         groupStartOpen: function(value, count, data, group) {
-            // console.log(value, count, data, group);
-            return false; //all groups with more than three rows start open, any with three or less start closed
+
+            return false;
         },
-        groupHeader:function(value, count, data, group){
-            //value - the value all members of this group share
-            //count - the number of rows in this group
-            //data - an array of all the row data objects in this group
-            //group - the group component for the group
+        groupHeader: function(value, count, data, group) {
 
             return value + "<span style='color:#d00; margin-left:10px;' title='Clic droit pour export CSV'>(" + count + " item)</span>";
         },
         groupContext: function(e, group) {
             e.preventDefault();
-            // var inputGroup = document.getElementById('groupBy-input').value;
-            // var fields = inputGroup.split('>').map(el => el.trim());
             var subGroups = group.getSubGroups();
             var groupElement = group.getElement();
-            // var columnsVisible = [];
-            // group.getTable().getColumns().forEach(column => {
-            //     if (column.getVisibility())
-            //         columnsVisible.push(column.getField());
-            // });
             var rowsData = [];
             if (subGroups.length === 0) {
                 var rows = group.getRows().forEach(row => {
@@ -502,7 +599,6 @@ function launchFinalTable(data, dataMappage) {
         document.getElementById('tableApp-div').classList.remove('hidden');
     }
 
-    //deselect row on "deselect all" button click
     document.getElementById("deselectAllRows-final").onclick = function(e) {
         finalTable.deselectRow();
     };
@@ -513,21 +609,29 @@ function launchFinalTable(data, dataMappage) {
     }
 
     document.getElementById('hideGroup-btn').onclick = function() {
+        document.getElementById('spinnerLoadFinal-span').classList.remove('hidden');
         var selectGroupsColumns = document.getElementById('groupsColumns-btn');
         var selectedGroup = selectGroupsColumns.options[selectGroupsColumns.selectedIndex].value;
         var columnsSelected = groupsToFilters[selectedGroup];
-        for (var i = 0, lgi = columnsSelected.length; i < lgi; ++i) {
-            finalTable.hideColumn(columnsSelected[i]);
-        }
+        setTimeout(() => {
+            for (var i = 0, lgi = columnsSelected.length; i < lgi; ++i) {
+                finalTable.hideColumn(columnsSelected[i]);
+            }
+            document.getElementById('spinnerLoadFinal-span').classList.add('hidden');
+        });
     }
 
     document.getElementById('showGroup-btn').onclick = function() {
+        document.getElementById('spinnerLoadFinal-span').classList.remove('hidden');
         var selectGroupsColumns = document.getElementById('groupsColumns-btn');
         var selectedGroup = selectGroupsColumns.options[selectGroupsColumns.selectedIndex].value;
         var columnsSelected = groupsToFilters[selectedGroup];
-        for (var i = 0, lgi = columnsSelected.length; i < lgi; ++i) {
-            finalTable.showColumn(columnsSelected[i]);
-        }
+        setTimeout(() => {
+            for (var i = 0, lgi = columnsSelected.length; i < lgi; ++i) {
+                finalTable.showColumn(columnsSelected[i]);
+            }
+            document.getElementById('spinnerLoadFinal-span').classList.add('hidden');
+        });
     }
 
     document.getElementById('hideCol-final').onclick = function() {
@@ -560,8 +664,7 @@ function launchFinalTable(data, dataMappage) {
             if (column.getVisibility())
                 columnsVisible.push(column.getField());
         });
-        // console.log(columnsVisible);
-        // solution https://stackoverflow.com/questions/38750705/filter-object-properties-by-key-in-es6
+
         var dataFiltered = filteredData.map(item => {
             return Object.keys(item)
                 .filter(key => columnsVisible.includes(key))
@@ -571,7 +674,7 @@ function launchFinalTable(data, dataMappage) {
                 }, {})
         });
         var dataExport = d3.csvParseRows(Papa.unparse(dataFiltered));
-        // dataExport = dataExport.map(el => el.slice(0, el.length-1)); // initialement pour enliver l'id par row
+
         return dataExport;
     };
 
