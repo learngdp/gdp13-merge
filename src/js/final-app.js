@@ -92,16 +92,16 @@ function prepareFinalStandard(data, dataMappage) {
         // console.log(dataSpec[i]);
 
         // nombre spr réussies
-        countSpe = rangeSpe[i].filter(el => el > pass70).length;
+        countSpe = rangeSpe[i].filter(el => el >= pass70).length;
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader1 = (max1 > pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max1)] : "";
+        var cellHeader1 = (max1 >= pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max1)] : "";
         if (rangeSpe[i].length > 1 && rangeSpe[i].indexOf(max1) !== -1)
             rangeSpe[i].splice(rangeSpe[i].indexOf(max1), 1, 0);
 
         var max2 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max2)] : "";
+        var cellHeader2 = (max2 >= pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max2)] : "";
         if (cellHeader2 === cellHeader1)
             cellHeader2 = "";
 
@@ -121,9 +121,9 @@ function prepareFinalStandard(data, dataMappage) {
         dataSpec[i].splice(4, 1, cohorte);
 
         // réussite classique et avancée
-        classic2Modules = ((d3.sum(rangeClassic[i]) / 4) > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
+        classic2Modules = ((d3.sum(rangeClassic[i]) / 4) >= pass70 && examenFinal[i][0] >= pass70 && countSpe >= 2) ?
             dataSpec[i].splice(5, 1, "OUI") : dataSpec[i].splice(5, 1, "NON");
-        classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
+        classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 >= pass70 && examenFinal[i][0] >= pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
 
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
@@ -199,7 +199,7 @@ function prepareFinalStandard(data, dataMappage) {
         (countSpe && countSpe >= 2) ? dataSpec[i].push(""): dataSpec[i].push("< 2");
         ((d3.sum(rangeClassic[i]) / 4) >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (examenFinal[i][0] >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
-        ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
+        ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
     const dataComplete = data.slice(0);
@@ -601,6 +601,10 @@ function launchFinalTable(data, dataMappage) {
 
     document.getElementById("deselectAllRows-final").onclick = function(e) {
         finalTable.deselectRow();
+    };
+
+    document.getElementById('filtersHeaderClear-final').onclick = function(e) {
+        finalTable.clearHeaderFilter();
     };
 
     document.getElementById('tableReport-btn').onclick = function(e) {

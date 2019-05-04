@@ -1201,16 +1201,16 @@ function prepareFinalStandard(data, dataMappage) {
         // console.log(dataSpec[i]);
 
         // nombre spr réussies
-        countSpe = rangeSpe[i].filter(el => el > pass70).length;
+        countSpe = rangeSpe[i].filter(el => el >= pass70).length;
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader1 = (max1 > pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max1)] : "";
+        var cellHeader1 = (max1 >= pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max1)] : "";
         if (rangeSpe[i].length > 1 && rangeSpe[i].indexOf(max1) !== -1)
             rangeSpe[i].splice(rangeSpe[i].indexOf(max1), 1, 0);
 
         var max2 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max2)] : "";
+        var cellHeader2 = (max2 >= pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][rangeSpe[i].indexOf(max2)] : "";
         if (cellHeader2 === cellHeader1)
             cellHeader2 = "";
 
@@ -1230,9 +1230,9 @@ function prepareFinalStandard(data, dataMappage) {
         dataSpec[i].splice(4, 1, cohorte);
 
         // réussite classique et avancée
-        classic2Modules = ((d3.sum(rangeClassic[i]) / 4) > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
+        classic2Modules = ((d3.sum(rangeClassic[i]) / 4) >= pass70 && examenFinal[i][0] >= pass70 && countSpe >= 2) ?
             dataSpec[i].splice(5, 1, "OUI") : dataSpec[i].splice(5, 1, "NON");
-        classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70 && examenFinal[i][0] > pass70 && countSpe >= 2) ?
+        classic3devoirs = ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 >= pass70 && examenFinal[i][0] >= pass70 && countSpe >= 2) ?
             dataSpec[i].splice(6, 1, "OUI") : dataSpec[i].splice(6, 1, "NON");
 
         // Quiz 1 à 4 : note sur 100 (%) et note sur (/20)
@@ -1308,7 +1308,7 @@ function prepareFinalStandard(data, dataMappage) {
         (countSpe && countSpe >= 2) ? dataSpec[i].push(""): dataSpec[i].push("< 2");
         ((d3.sum(rangeClassic[i]) / 4) >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (examenFinal[i][0] >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
-        ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 > pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
+        ((d3.sum(rangeClassic[i]) + d3.sum(rangeDevoirs[i])) / 7 >= pass70) ? dataSpec[i].push(""): dataSpec[i].push("< 70%");
         (rangeDevoirs[i].filter(el => el !== 0).length === 3) ? dataSpec[i].push(""): dataSpec[i].push("< 3");
     }
     const dataComplete = data.slice(0);
@@ -1712,6 +1712,10 @@ function launchFinalTable(data, dataMappage) {
         finalTable.deselectRow();
     };
 
+    document.getElementById('filtersHeaderClear-final').onclick = function(e) {
+        finalTable.clearHeaderFilter();
+    };
+
     document.getElementById('tableReport-btn').onclick = function(e) {
         document.getElementById('tableFinal-div').classList.add('hidden');
         document.getElementById('tableApp-div').classList.remove('hidden');
@@ -1847,7 +1851,6 @@ function globalReport(jsonData, dataMappage) {
         row = data.slice(1, data.length)[i];
 
         var cohortName = row[5];
-        // var grades = row[6] != undefined ? row[6].split(',') : "";
         var livrableAvg = row[16];
 
         var grades = row[32] != undefined ? row[32].split(',') : "";
@@ -1870,18 +1873,18 @@ function globalReport(jsonData, dataMappage) {
             checkFiles.push([row[0], row[39]]);
         }
 
-        countSpe = rangeSpe[i].filter(el => el > pass70).length;
+        countSpe = rangeSpe[i].filter(el => el >= pass70).length;
 
         // 2 meilleures spécialisations
         var max1 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader1 = (max1 > pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][
+        var cellHeader1 = (max1 >= pass70 && rangeSpe[i].indexOf(max1) !== -1) ? headersSpe[0][
             rangeSpe[i].indexOf(max1)
         ] : "";
         if (rangeSpe[i].length > 1 && rangeSpe[i].indexOf(max1) !== -1) rangeSpe[i].splice(
             rangeSpe[i].indexOf(max1), 1, 0);
 
         var max2 = Math.max.apply(null, rangeSpe[i]);
-        var cellHeader2 = (max2 > pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][
+        var cellHeader2 = (max2 >= pass70 && rangeSpe[i].indexOf(max2) !== -1) ? headersSpe[0][
             rangeSpe[i].indexOf(max2)
         ] : "";
         if (cellHeader2 === cellHeader1)
@@ -1890,28 +1893,44 @@ function globalReport(jsonData, dataMappage) {
         cellHeader1 = regexHeadersSPE.test(cellHeader1) ? cellHeader1.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader1;
         cellHeader2 = regexHeadersSPE.test(cellHeader2) ? cellHeader2.match(regexHeadersSPE)[0].replace(/\s\-/, "") : cellHeader2;
 
-        var attestationPC,
+        var enrollment_SPE_verified = Object.entries(verifieldTuples).filter(el => el[0] !== "TC" && el[0] !== "PA" && el[1] === "verified").map(el => el[0]);
+        var enrollment_SPE_oui = (enrollment_SPE_verified.length >= 2);
+        var enrollment_SPE_non = (enrollment_SPE_verified.length < 2);
+
+        var attestationTC,
             attestationPA;
 
-        var PC_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2);
+        var TC_oui = (gradeTC != "" && +gradeTC >= pass70 && countSpe >= 2);
+        var PA_oui = (gradeTC != "" && +gradeTC >= pass70 && countSpe >= 2 && livrableAvg >= pass70);
 
-        var PA_oui = (grades != "" && +grades[0] >= pass70 && countSpe >= 2 && livrableAvg >= pass70);
+        var enrollment_TC_oui = (verifieldTuples["TC"] && verifieldTuples["TC"] === "verified");
+        var enrollment_TC_non = (verifieldTuples["TC"] && verifieldTuples["TC"] !== "verified");
 
-        var enrollment_oui = (verifieldTuples["TC"] === "verified" && verifieldTuples[cellHeader1] === "verified" && verifieldTuples[cellHeader2] === "verified");
-
-        var enrollment_non = (verifieldTuples["TC"] != "verified" || verifieldTuples[cellHeader1] != "verified" || verifieldTuples[cellHeader2] != "verified");
+        var enrollment_PA_oui = (verifieldTuples["PA"] && verifieldTuples["PA"] === "verified");
+        var enrollment_PA_non = (verifieldTuples["PA"] && verifieldTuples["PA"] !== "verified");
 
         // validation attestation TC
-        // (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && cohortName != "") ? attestationPC = "OUI" : (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
-        (PC_oui && enrollment_oui) ? attestationPC = "OUI": (PC_oui && enrollment_non) ? attestationPC = "en attente" : attestationPC = "NON";
+        (cohortName !== "" && TC_oui) ? attestationTC = "OUI":
+            (TC_oui && enrollment_TC_oui && enrollment_SPE_oui) ? attestationTC = "OUI" :
+            (TC_oui && enrollment_TC_oui && enrollment_SPE_non) ? attestationTC = "en attente" :
+            (TC_oui && enrollment_TC_non && enrollment_SPE_oui) ? attestationTC = "en attente" :
+            attestationTC = "NON";
 
-        // validation attestion PA
-        // (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && cohortName != "") ? attestationPA = "OUI" : (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
-        (PA_oui && enrollment_oui) ? attestationPA = "OUI": (PA_oui && enrollment_non) ? attestationPA = "en attente" : attestationPA = "NON";
+        // validation attestation TC
+        (cohortName !== "" && PA_oui) ? attestationPA = "OUI":
+            (PA_oui && enrollment_PA_oui && attestationTC === "OUI") ? attestationPA = "OUI" :
+            (PA_oui && enrollment_PA_oui && attestationTC === "en attente") ? attestationPA = "en attente" :
+            (PA_oui && enrollment_PA_non && attestationTC === "OUI" || attestationTC === "en attente") ? attestationPA = "en attente" :
+            attestationPA = "NON";
 
-        row.splice(6, 0, attestationPC);
+        // Attestation TC
+        row.splice(6, 0, attestationTC);
+
+        // Attestation PA
         row.splice(7, 0, attestationPA);
+
         row.splice(8, 0, gradeTC);
+
         row.splice(10, 0, cellHeader1);
         row.splice(11, 0, cellHeader2);
         row.splice(12, 0, countSpe);
@@ -1930,13 +1949,13 @@ function globalReport(jsonData, dataMappage) {
         exportCSVDefault(checkFiles, "erreur-fusion-fichiers");
     }
 
-    document.getElementById('finalStandard-btn').onclick = function (e) {
+    document.getElementById('finalStandard-btn').onclick = function(e) {
         document.getElementById('tableApp-div').classList.add('hidden');
         document.getElementById('tableFinal-div').classList.remove('hidden');
         if (this.dataset.switch !== "done") {
             document.getElementById('spinnerLoadFinal-span').classList.replace('hidden', 'inline');
             setTimeout(() => {
-                launchFinalTable(dataFromCSV, dataMappage);
+                launchFinalTable(dataFromCSV.filter(row => row[5] !== ""), dataMappage);
             }, 1000);
         }
     }
